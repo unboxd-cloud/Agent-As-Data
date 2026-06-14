@@ -1,4 +1,4 @@
-import k8s from '@kubernetes/client-node';
+import * as k8s from '@kubernetes/client-node';
 import { Surreal } from 'surrealdb';
 
 const GROUP = 'fabric.agennext.io';
