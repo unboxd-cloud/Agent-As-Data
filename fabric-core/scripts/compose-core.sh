@@ -4,23 +4,20 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "== Fabric Core: Compose Self-Servable Mac Stack =="
+echo "== Fabric Core: Compose Headless Mac Stack =="
 
-chmod +x fabric-metal-core/scripts/check-mac-metal.sh
-chmod +x pod-manager/scripts/*.sh
+chmod +x fabric-core/scripts/headless.sh
 chmod +x fabric-core/scripts/build-stack.sh
 
-fabric-metal-core/scripts/check-mac-metal.sh
-
-echo "== Starting local self-servable services =="
-pod-manager/scripts/up-compose.sh
+fabric-core/scripts/headless.sh check
 
 echo "== Building native Apple Silicon app stack =="
 fabric-core/scripts/build-stack.sh
 
-echo "== Fabric Core status =="
-pod-manager/scripts/status.sh
+echo "== Headless status =="
+fabric-core/scripts/headless.sh status
 
-echo "== Fabric Core composed =="
-echo "Control Pane: http://localhost:5173"
+echo "== Fabric Core headless stack composed =="
+echo "No local services were started by default."
+echo "To opt in to local services, run: fabric-core/scripts/start-local-services.sh"
 echo "Native app build output: fabric-mac-core/src-tauri/target/release/bundle"
