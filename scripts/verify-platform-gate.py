@@ -6,12 +6,16 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "platform" / "gates" / "platform-gate.yaml"
 CORE_DOCTRINE = ROOT / "docs" / "platform-core-doctrine.md"
 AGENT_BOOK = ROOT / "agent-book" / "README.md"
+BOOK_SITE = ROOT / "book-site" / "index.html"
+BOOK_PUBLISH_WORKFLOW = ROOT / ".github" / "workflows" / "publish-agent-book.yaml"
 
 REQUIRED_TEXT = [
     "releaseAuthority: Chinmay Panda",
     "bookBinding:",
     "name: Agent Book",
     "path: agent-book/README.md",
+    "sitePath: book-site/index.html",
+    "publishWorkflow: .github/workflows/publish-agent-book.yaml",
     "coreDoctrine:",
     "Agent as Data",
     "Mathematics as Meta",
@@ -24,6 +28,7 @@ REQUIRED_TEXT = [
     "docs/platform-core-doctrine.md",
     "docs/meta-mathematical-model.md",
     "docs/agentic-operational-excellence-at-scale.md",
+    "book-site/index.html",
     "release-gates/fabricore-v0.1.0.provenance.json",
     "No agent without data",
     "No scale without mathematics",
@@ -31,6 +36,7 @@ REQUIRED_TEXT = [
     "No artifact without provenance",
     "No release without a named gate",
     "No platform without a bound book",
+    "No bound book without a publish path",
     "No scale before surface minimization",
 ]
 
@@ -52,6 +58,21 @@ REQUIRED_BOOK_TEXT = [
     "Chinmay Panda",
 ]
 
+REQUIRED_SITE_TEXT = [
+    "Agent Book",
+    "A Platform Bound to a Book",
+    "The book explains the platform.",
+    "The gates enforce the platform.",
+    "The human releases the platform.",
+]
+
+REQUIRED_PUBLISH_WORKFLOW_TEXT = [
+    "name: Publish Agent Book",
+    "actions/deploy-pages@v4",
+    "book-site/**",
+    "agent-book/**",
+]
+
 REQUIRED_FILES = [
     "agent-book/README.md",
     "agent-book/01-agent-as-data.md",
@@ -63,6 +84,7 @@ REQUIRED_FILES = [
     "agent-book/07-repair-agent.md",
     "agent-book/08-release-gates.md",
     "agent-book/09-operational-excellence.md",
+    "book-site/index.html",
     "docs/platform-core-doctrine.md",
     "docs/meta-mathematical-model.md",
     "docs/agentic-operational-excellence-at-scale.md",
@@ -74,6 +96,7 @@ REQUIRED_FILES = [
     "release-gates/fabricore-v0.1.0.provenance.json",
     ".github/workflows/fabricore-release-flow.yaml",
     ".github/workflows/fabricore-loop.yaml",
+    ".github/workflows/publish-agent-book.yaml",
 ]
 
 
@@ -82,36 +105,35 @@ def fail(message: str) -> None:
     sys.exit(1)
 
 
+def require_text(content: str, required: list[str], label: str) -> None:
+    for text in required:
+        if text not in content:
+            fail(f"{label} missing required text: {text}")
+
+
 def main() -> None:
     if not MANIFEST.exists():
         fail("missing platform gate manifest")
-
     if not CORE_DOCTRINE.exists():
         fail("missing platform core doctrine")
-
     if not AGENT_BOOK.exists():
         fail("missing Agent Book index")
+    if not BOOK_SITE.exists():
+        fail("missing Agent Book site")
+    if not BOOK_PUBLISH_WORKFLOW.exists():
+        fail("missing Agent Book publish workflow")
 
-    manifest = MANIFEST.read_text()
-    for text in REQUIRED_TEXT:
-        if text not in manifest:
-            fail(f"platform gate missing required text: {text}")
-
-    core_doctrine = CORE_DOCTRINE.read_text()
-    for text in REQUIRED_CORE_DOCTRINE_TEXT:
-        if text not in core_doctrine:
-            fail(f"core doctrine missing required text: {text}")
-
-    agent_book = AGENT_BOOK.read_text()
-    for text in REQUIRED_BOOK_TEXT:
-        if text not in agent_book:
-            fail(f"Agent Book missing required text: {text}")
+    require_text(MANIFEST.read_text(), REQUIRED_TEXT, "platform gate")
+    require_text(CORE_DOCTRINE.read_text(), REQUIRED_CORE_DOCTRINE_TEXT, "core doctrine")
+    require_text(AGENT_BOOK.read_text(), REQUIRED_BOOK_TEXT, "Agent Book")
+    require_text(BOOK_SITE.read_text(), REQUIRED_SITE_TEXT, "Agent Book site")
+    require_text(BOOK_PUBLISH_WORKFLOW.read_text(), REQUIRED_PUBLISH_WORKFLOW_TEXT, "Agent Book publish workflow")
 
     for file_name in REQUIRED_FILES:
         if not (ROOT / file_name).exists():
             fail(f"platform gate required file missing: {file_name}")
 
-    print("OK: platform gate, core doctrine, and Agent Book binding are enforceable")
+    print("OK: platform gate, Agent Book, and publish path are enforceable")
 
 
 if __name__ == "__main__":
