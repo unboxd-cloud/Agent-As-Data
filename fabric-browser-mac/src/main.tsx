@@ -1,5 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { executeFabricCoreAction, isFabricCoreNative, listFabricCoreActions, type FabricCoreAction } from "./fabricCore";
 import { formatSurrealId, queryAgents, type SurrealAgentRecord } from "./surreal";
 import "./styles.css";
 
@@ -55,9 +56,7 @@ function App() {
       <section className="hero">
         <p className="eyebrow">Agent-as-Data SaaS</p>
         <h1>Fabric Multi-Tenant Control Pane</h1>
-        <p>
-          Inspect the Fabric Platform as a SaaS control pane with tenant isolation, Runtime Face, Flow Face, and an author command surface.
-        </p>
+        <p>Inspect the Fabric Platform as a SaaS control pane with tenant isolation, Runtime Face, Flow Face, and an author command surface.</p>
       </section>
 
       <section className="panel grid two">
@@ -99,24 +98,7 @@ function App() {
 }
 
 function TenantPane({ tenant, setTenant }: { tenant: TenantContext; setTenant: (tenant: TenantContext) => void }) {
-  return (
-    <div className="tenant-grid">
-      <article className="card">
-        <p className="eyebrow">Tenant Context</p>
-        <h3>SaaS Isolation Boundary</h3>
-        <p>Every Agent, flow event, decision, and audit record must be scoped to a tenant and workspace.</p>
-        <label>Tenant ID<input value={tenant.tenantId} onChange={(event) => setTenant({ ...tenant, tenantId: event.target.value })} /></label>
-        <label>Workspace ID<input value={tenant.workspaceId} onChange={(event) => setTenant({ ...tenant, workspaceId: event.target.value })} /></label>
-        <label>Environment<select value={tenant.environment} onChange={(event) => setTenant({ ...tenant, environment: event.target.value as TenantContext["environment"] })}><option value="local">local</option><option value="dev">dev</option><option value="staging">staging</option><option value="production">production</option></select></label>
-      </article>
-      <article className="card">
-        <p className="eyebrow">Tenant Rule</p>
-        <h3>Deny Cross-Tenant Access</h3>
-        <p>Control Pane reads and writes must be tenant-scoped. Cross-tenant access requires explicit platform governance and audit evidence.</p>
-        <pre>{`tenant_id = "${tenant.tenantId}"\nworkspace_id = "${tenant.workspaceId}"\nenvironment = "${tenant.environment}"`}</pre>
-      </article>
-    </div>
-  );
+  return <div className="tenant-grid"><article className="card"><p className="eyebrow">Tenant Context</p><h3>SaaS Isolation Boundary</h3><p>Every Agent, flow event, decision, and audit record must be scoped to a tenant and workspace.</p><label>Tenant ID<input value={tenant.tenantId} onChange={(event) => setTenant({ ...tenant, tenantId: event.target.value })} /></label><label>Workspace ID<input value={tenant.workspaceId} onChange={(event) => setTenant({ ...tenant, workspaceId: event.target.value })} /></label><label>Environment<select value={tenant.environment} onChange={(event) => setTenant({ ...tenant, environment: event.target.value as TenantContext["environment"] })}><option value="local">local</option><option value="dev">dev</option><option value="staging">staging</option><option value="production">production</option></select></label></article><article className="card"><p className="eyebrow">Tenant Rule</p><h3>Deny Cross-Tenant Access</h3><p>Control Pane reads and writes must be tenant-scoped. Cross-tenant access requires explicit platform governance and audit evidence.</p><pre>{`tenant_id = "${tenant.tenantId}"\nworkspace_id = "${tenant.workspaceId}"\nenvironment = "${tenant.environment}"`}</pre></article></div>;
 }
 
 function RuntimeFace({ agents, tenant }: { agents: SurrealAgentRecord[]; tenant: TenantContext }) {
@@ -131,7 +113,28 @@ function FlowFace({ tenant }: { tenant: TenantContext }) {
 
 function ControlPane({ agents, tenant }: { agents: SurrealAgentRecord[]; tenant: TenantContext }) {
   const [input, setInput] = useState("");
+  const [actions, setActions] = useState<FabricCoreAction[]>([]);
+  const [actionOutput, setActionOutput] = useState("No Fabric Core action executed yet.");
+  const [runningAction, setRunningAction] = useState<string | null>(null);
+  const native = isFabricCoreNative();
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: "fabric", content: `I am the Fabric Control Pane for tenant ${tenant.tenantId}/${tenant.workspaceId}. I can help draft Agent intent, inspect loaded Agent records, and explain the next reconciliation step.`, timestamp: new Date().toISOString() }]);
+
+  useEffect(() => {
+    listFabricCoreActions().then(setActions).catch((error) => setActionOutput(error instanceof Error ? error.message : "Unable to load Fabric Core actions"));
+  }, []);
+
+  async function runAction(action: FabricCoreAction) {
+    setRunningAction(action.id);
+    setActionOutput(`Running ${action.label}...`);
+    try {
+      const result = await executeFabricCoreAction(action.id);
+      setActionOutput([`Action: ${result.action_id}`, `Status: ${result.status}`, "", "stdout:", result.stdout || "<empty>", "", "stderr:", result.stderr || "<empty>"].join("\n"));
+    } catch (error) {
+      setActionOutput(error instanceof Error ? error.message : "Action failed");
+    } finally {
+      setRunningAction(null);
+    }
+  }
 
   function sendMessage() {
     const trimmed = input.trim();
@@ -143,7 +146,7 @@ function ControlPane({ agents, tenant }: { agents: SurrealAgentRecord[]; tenant:
     setInput("");
   }
 
-  return <div className="chat-shell"><div className="chat-log">{messages.map((message, index) => <article className={`chat-message ${message.role}`} key={`${message.timestamp}-${index}`}><p className="eyebrow">{message.role === "author" ? "Author" : "Fabric"}</p><p>{message.content}</p></article>)}</div><div className="chat-input-row"><input value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") sendMessage(); }} placeholder="Describe tenant-scoped agent intent or ask about Fabric state..." /><button onClick={sendMessage}>Send</button></div><p className="muted">Boundary: Control Pane drafts tenant intent. GitHub stores intent. CI/CD verifies. Kubernetes and the Java reconciler reconcile. SurrealDB stores tenant-scoped truth.</p></div>;
+  return <div className="control-grid"><section className="chat-shell"><div className="chat-log">{messages.map((message, index) => <article className={`chat-message ${message.role}`} key={`${message.timestamp}-${index}`}><p className="eyebrow">{message.role === "author" ? "Author" : "Fabric"}</p><p>{message.content}</p></article>)}</div><div className="chat-input-row"><input value={input} onChange={(event) => setInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") sendMessage(); }} placeholder="Describe tenant-scoped agent intent or ask about Fabric state..." /><button onClick={sendMessage}>Send</button></div><p className="muted">Boundary: Control Pane drafts tenant intent. GitHub stores intent. CI/CD verifies. Kubernetes and the Java reconciler reconcile. SurrealDB stores tenant-scoped truth.</p></section><section className="card"><p className="eyebrow">Fabric Core Actions</p><h3>Hardened Mac Surface</h3><p>{native ? "Native bridge detected. Only allowlisted actions can run." : "Browser mode: native Fabric Core actions are disabled. Open Fabric Mac Core.app to run them."}</p><div className="action-grid">{actions.length === 0 ? <p className="muted">No native actions loaded.</p> : actions.map((action) => <button key={action.id} disabled={!native || runningAction !== null} onClick={() => runAction(action)} title={action.description}>{runningAction === action.id ? "Running..." : action.label}</button>)}</div><pre className="output-log">{actionOutput}</pre></section></div>;
 }
 
 function respond(input: string, agents: SurrealAgentRecord[], tenant: TenantContext): string {
