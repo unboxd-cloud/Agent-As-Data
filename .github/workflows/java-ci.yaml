@@ -1,0 +1,32 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - operator-java/**
+      - .github/workflows/java-ci.yaml
+  pull_request:
+    paths:
+      - operator-java/**
+      - .github/workflows/java-ci.yaml
+
+jobs:
+  build:
+    name: Build Java Reconciler
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build
+        working-directory: operator-java
+        run: mvn -B -DskipTests package
