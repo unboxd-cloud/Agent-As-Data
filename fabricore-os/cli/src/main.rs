@@ -1,3 +1,5 @@
+mod meta_kube;
+
 use std::env;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
@@ -22,6 +24,7 @@ fn run() -> Result<(), String> {
         "check" => run_script(&root, "fabric-core/scripts/headless.sh", &["check"]),
         "status" => run_script(&root, "fabric-core/scripts/headless.sh", &["status"]),
         "prove" => run_script(&root, "fabric-core/scripts/headless.sh", &["prove"]),
+        "meta-kube" if subcommand == "validate" => validate_meta_kube(),
         "build" if subcommand == "dmg" => run_script(&root, "fabricore-os/build-fabric-dmg.sh", &[]),
         "services" if subcommand == "start" => run_script(&root, "fabric-core/scripts/start-local-services.sh", &[]),
         "help" | "--help" | "-h" => {
@@ -33,6 +36,16 @@ fn run() -> Result<(), String> {
             Err(format!("unsupported command: {} {}", command, subcommand).trim().to_string())
         }
     }
+}
+
+fn validate_meta_kube() -> Result<(), String> {
+    let meta_kube = meta_kube::MetaKube::fabricore_release_gate();
+    meta_kube.validate()?;
+    println!("OK: Meta Kube is valid");
+    println!("id={}", meta_kube.id);
+    println!("owner={}", meta_kube.owner);
+    println!("release_gate={}", meta_kube.contract.release_gate);
+    Ok(())
 }
 
 fn run_script(root: &Path, script: &str, args: &[&str]) -> Result<(), String> {
@@ -89,6 +102,7 @@ Usage:
   fabricore check
   fabricore status
   fabricore prove
+  fabricore meta-kube validate
   fabricore build dmg
   fabricore services start
 
