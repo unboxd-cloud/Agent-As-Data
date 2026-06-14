@@ -1,0 +1,53 @@
+apiVersion: fabric.agennext.io/v1alpha1
+kind: Agent
+metadata:
+  name: repair-agent
+  labels:
+    fabric.agennext.io/type: repair
+    fabric.agennext.io/surface: headless
+    fabric.agennext.io/authority: human-gated
+spec:
+  name: Repair Agent
+  objective: Detect failed gates, convert failures into repair loops, propose minimal patches, and preserve human release authority.
+  status: active
+  trustScore: 0.7
+  tenancy:
+    tenantId: default
+    workspaceId: release
+    environment: pr-gate
+  contract:
+    allowedActions:
+      - inspect-failed-workflow
+      - identify-first-failing-gate
+      - create-repair-issue
+      - propose-minimal-patch
+      - update-repair-evidence
+      - request-human-review
+    forbiddenActions:
+      - approve-release
+      - bypass-gate
+      - disable-policy
+      - delete-evidence
+      - mutate-production-without-approval
+      - cross-tenant-action-without-relation
+  gates:
+    required:
+      - platform-gate
+      - provenance-gate
+      - rust-meta-kube-and-superstorm-gate
+      - java-artifact-gate
+      - mac-dmg-gate
+      - release-authority-gate
+  evidence:
+    storm: required
+    superstorm: required
+    provenance: required
+    failedWorkflowRun: required
+  authority:
+    releaseAuthority: Chinmay Panda
+    approvalRequired: true
+  repairPolicy:
+    mode: first-failure-first
+    patchScope: minimal
+    requireEvidenceBeforePatch: true
+    requireGateRerunAfterPatch: true
