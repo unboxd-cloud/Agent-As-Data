@@ -12,6 +12,12 @@ coreDoctrine:
   - Agent as Data
   - Mathematics as Meta
   - Metal at Core
+controlPrimitives:
+  - Agent Eye
+  - Cortex
+  - Repair Agent
+  - Storm
+  - Superstorm
 requiredBookChapters:
   - agent-book/README.md
   - agent-book/01-agent-as-data.md
@@ -27,6 +33,8 @@ requiredDocuments:
   - docs/platform-core-doctrine.md
   - docs/agentic-operational-excellence-at-scale.md
   - docs/meta-mathematical-model.md
+  - docs/cortex.md
+  - docs/agent-eye.md
   - platform/README.md
   - fabricore-os/CONTRACT.md
   - fabricore-os/FLOW.md
@@ -62,4 +70,6 @@ nonNegotiables:
   - No failure without a repair loop
   - No platform without a bound book
   - No bound book without a publish path
+  - No Cortex without Agent Eye evidence
+  - No Repair Agent action without Cortex routing
   - No scale before surface minimization
