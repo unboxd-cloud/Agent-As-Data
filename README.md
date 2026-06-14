@@ -1,17 +1,17 @@
 # Agent As Data
 
-**Agent As Data** is a Kubernetes-native foundation for modeling intelligent agents as durable, declarative records while the Fabric runtime reconciles, governs, and executes them.
+**Agent As Data** is a Kubernetes-native foundation for modeling intelligent agents as durable, declarative records while Fabric provides the runtime and flow that governs, routes, and executes them.
 
 ## Core Principle
 
 ```text
 Agent = Data
-Fabric = Runtime
+Fabric = Runtime and Flow
 Kubernetes = Reconciliation Engine
 SurrealDB = Source of Truth
 ```
 
-An agent is not a process first. An agent is a governed object with identity, objective, lifecycle, trust, skills, tools, policies, and memory. The runtime reads this object, evaluates policy, executes work, and writes decisions, events, and audit records back into the Fabric graph.
+An agent is not a process first. An agent is a governed object with identity, objective, lifecycle, trust, skills, tools, policies, and memory. Fabric reads this object from the source of truth, evaluates policy, drives flow, executes work, and writes decisions, events, and audit records back into the Fabric graph.
 
 ## Authorship and Operating Model
 
@@ -23,13 +23,13 @@ The human is the author, owner, and decision authority.
 The agent is the reconciler loop:
 
 ```text
-GitHub → CI/CD → k3s → Agent CRD → Java Reconciler Pod → SurrealDB → Fabric Runtime
+GitHub → CI/CD → k3s → Agent CRD → Java Reconciler Pod → SurrealDB → Fabric Runtime and Flow
 ```
 
 Principles:
 
 - Agent = Data
-- Fabric = Runtime
+- Fabric = Runtime and Flow
 - Kubernetes = Reconciliation Engine
 - SurrealDB = Source of Truth
 - Human = Author and Approval Gate
@@ -51,7 +51,7 @@ Java Reconciler Pod
  ↓
 SurrealDB
  ↓
-Fabric Runtime
+Fabric Runtime and Flow
 ```
 
 ## Repository Layout
@@ -118,4 +118,4 @@ CREATE agent:fabric_architect SET
 
 ## Status
 
-This repository contains the declarative foundation for Agent-as-Data. The Java reconciler is the primary operator path for reconciling Kubernetes Agent resources into SurrealDB records.
+This repository contains the declarative foundation for Agent-as-Data. The Java reconciler is the primary operator path for reconciling Kubernetes Agent resources into SurrealDB records. Fabric is the runtime and flow layer that acts from the reconciled source-of-truth data.
