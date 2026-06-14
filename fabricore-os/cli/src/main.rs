@@ -1,4 +1,5 @@
 mod meta_kube;
+mod stream;
 
 use std::env;
 use std::path::{Path, PathBuf};
@@ -25,6 +26,8 @@ fn run() -> Result<(), String> {
         "status" => run_script(&root, "fabric-core/scripts/headless.sh", &["status"]),
         "prove" => run_script(&root, "fabric-core/scripts/headless.sh", &["prove"]),
         "meta-kube" if subcommand == "validate" => validate_meta_kube(),
+        "stream" if subcommand == "emit" => emit_stream(),
+        "stream" if subcommand == "validate" => validate_stream(),
         "build" if subcommand == "dmg" => run_script(&root, "fabricore-os/build-fabric-dmg.sh", &[]),
         "services" if subcommand == "start" => run_script(&root, "fabric-core/scripts/start-local-services.sh", &[]),
         "help" | "--help" | "-h" => {
@@ -45,6 +48,23 @@ fn validate_meta_kube() -> Result<(), String> {
     println!("id={}", meta_kube.id);
     println!("owner={}", meta_kube.owner);
     println!("release_gate={}", meta_kube.contract.release_gate);
+    Ok(())
+}
+
+fn emit_stream() -> Result<(), String> {
+    let events = stream::fabricore_release_stream();
+    stream::validate_stream(&events)?;
+    for event in events {
+        println!("{}", event.line());
+    }
+    Ok(())
+}
+
+fn validate_stream() -> Result<(), String> {
+    let events = stream::fabricore_release_stream();
+    stream::validate_stream(&events)?;
+    println!("OK: Fabricore release stream is valid");
+    println!("events={}", events.len());
     Ok(())
 }
 
@@ -103,6 +123,8 @@ Usage:
   fabricore status
   fabricore prove
   fabricore meta-kube validate
+  fabricore stream emit
+  fabricore stream validate
   fabricore build dmg
   fabricore services start
 
