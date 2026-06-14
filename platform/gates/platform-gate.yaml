@@ -4,8 +4,10 @@ releaseAuthority: Chinmay Panda
 bookBinding:
   name: Agent Book
   path: agent-book/README.md
+  sitePath: book-site/index.html
+  publishWorkflow: .github/workflows/publish-agent-book.yaml
   version: 0.1.0
-  rule: The platform is bound to the book; the book explains the doctrine; the gates enforce it.
+  rule: The platform is bound to the book; the book explains the doctrine; the gates enforce it; the site publishes it.
 coreDoctrine:
   - Agent as Data
   - Mathematics as Meta
@@ -30,10 +32,12 @@ requiredDocuments:
   - fabricore-os/FLOW.md
   - fabric-core/CONTRACT.md
   - fabric-core/SURFACE.md
+  - book-site/index.html
   - release-gates/fabricore-v0.1.0.provenance.json
 requiredWorkflows:
   - .github/workflows/fabricore-release-flow.yaml
   - .github/workflows/fabricore-loop.yaml
+  - .github/workflows/publish-agent-book.yaml
 requiredArtifacts:
   - dist/fabricore.jar
   - dist/fabricore.jar.sha256
@@ -57,4 +61,5 @@ nonNegotiables:
   - No release without a named gate
   - No failure without a repair loop
   - No platform without a bound book
+  - No bound book without a publish path
   - No scale before surface minimization
