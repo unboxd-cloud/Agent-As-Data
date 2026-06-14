@@ -1,6 +1,6 @@
 # Fabric Pod Manager
 
-Fabric Pod Manager is the self-hosted control layer for managing local Fabric pods.
+Fabric Pod Manager is the self-servable control layer for managing local Fabric pods and services.
 
 It is not the source of truth and it is not the Fabric Platform.
 
@@ -18,7 +18,7 @@ Fabric executes runtime and flow.
 Fabric Pod Manager provides a self-service interface for:
 
 - local pod health
-- self-hosted service status
+- self-servable service status
 - SurrealDB pod checks
 - reconciler pod checks
 - Control Pane status
@@ -40,7 +40,7 @@ It does not become the source of truth.
 ## Local Stack
 
 ```text
-Self-Hosted Host
+Self-Servable Local Host
   ↓
 Pod Manager
   ↓
