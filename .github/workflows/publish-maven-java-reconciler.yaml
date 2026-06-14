@@ -1,0 +1,35 @@
+name: Publish Java Reconciler Maven Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - operator-java/**
+      - .github/workflows/publish-maven-java-reconciler.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: Publish Maven package
+        working-directory: operator-java
+        run: mvn -B deploy -DskipTests --settings $GITHUB_WORKSPACE/settings.xml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
