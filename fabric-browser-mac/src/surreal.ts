@@ -7,6 +7,8 @@ export interface SurrealAgentRecord {
   trust_score?: number;
   runtime_mode?: string;
   approvals?: string;
+  tenant_id?: string;
+  workspace_id?: string;
   updated_at?: string;
   kubernetes?: {
     namespace?: string;
@@ -22,6 +24,8 @@ export interface SurrealConnection {
   password: string;
   namespace: string;
   database: string;
+  tenantId?: string;
+  workspaceId?: string;
 }
 
 export interface SurrealQueryResult<T> {
@@ -54,5 +58,10 @@ export async function queryAgents(connection: SurrealConnection): Promise<Surrea
   }
 
   const payload = (await response.json()) as SurrealQueryResult<SurrealAgentRecord[]>[];
-  return payload.flatMap((entry) => entry.result ?? []);
+  const agents = payload.flatMap((entry) => entry.result ?? []);
+  return agents.filter((agent) => {
+    const tenantMatches = !connection.tenantId || !agent.tenant_id || agent.tenant_id === connection.tenantId;
+    const workspaceMatches = !connection.workspaceId || !agent.workspace_id || agent.workspace_id === connection.workspaceId;
+    return tenantMatches && workspaceMatches;
+  });
 }
