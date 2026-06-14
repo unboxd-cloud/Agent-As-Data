@@ -6,8 +6,8 @@
   <groupId>cloud.unboxd.fabricore</groupId>
   <artifactId>fabricore-os-java</artifactId>
   <version>0.1.0</version>
-  <name>Fabricore OS Java Definition</name>
-  <description>Java contract model for Fabricore OS headless single-binary surface.</description>
+  <name>Fabricore OS Java</name>
+  <description>Java implementation for Fabricore OS headless CLI surface.</description>
 
   <properties>
     <maven.compiler.source>21</maven.compiler.source>
@@ -21,6 +21,18 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>cloud.unboxd.fabricore.FabricoreCli</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
       </plugin>
     </plugins>
   </build>
