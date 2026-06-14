@@ -1,0 +1,29 @@
+name: Tenant Policy CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  opa:
+    name: Validate OPA Policies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up OPA
+        uses: open-policy-agent/setup-opa@v2
+        with:
+          version: latest
+
+      - name: Format check
+        run: opa fmt --check policies
+
+      - name: Policy check
+        run: opa check policies
