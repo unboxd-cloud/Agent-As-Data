@@ -103,5 +103,23 @@ pub fn validate_actions(actions: &FabricCoreActions) -> Result<(), String> {
 }
 
 fn repo_root() -> Result<PathBuf, String> {
-    std::env::current_dir().map_err(|error| format!("failed to resolve current directory: {error}"))
+    let current = std::env::current_dir().map_err(|error| format!("failed to resolve current directory: {error}"))?;
+
+    if current.join("fabric-core/actions.json").exists() {
+        return Ok(current);
+    }
+
+    if current.file_name().and_then(|name| name.to_str()) == Some("fabric-mac-core") {
+        if let Some(parent) = current.parent() {
+            return Ok(parent.to_path_buf());
+        }
+    }
+
+    if current.ends_with("src-tauri") {
+        if let Some(parent) = current.parent().and_then(|mac_core| mac_core.parent()) {
+            return Ok(parent.to_path_buf());
+        }
+    }
+
+    Err(format!("failed to locate repo root from {}", current.display()))
 }
