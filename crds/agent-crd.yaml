@@ -33,6 +33,23 @@ spec:
                   type: string
                 objective:
                   type: string
+                tenancy:
+                  type: object
+                  properties:
+                    tenantId:
+                      type: string
+                      default: default
+                    workspaceId:
+                      type: string
+                      default: default
+                    environment:
+                      type: string
+                      enum:
+                        - local
+                        - dev
+                        - staging
+                        - production
+                      default: local
                 status:
                   type: string
                   enum:
@@ -114,6 +131,12 @@ spec:
       subresources:
         status: {}
       additionalPrinterColumns:
+        - name: Tenant
+          type: string
+          jsonPath: .spec.tenancy.tenantId
+        - name: Workspace
+          type: string
+          jsonPath: .spec.tenancy.workspaceId
         - name: Status
           type: string
           jsonPath: .spec.status
