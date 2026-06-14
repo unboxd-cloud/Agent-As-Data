@@ -1,0 +1,15 @@
+{
+  "name": "fabric-mac-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "frontend:dev": "cd ../fabric-browser-mac && npm install && npm run dev",
+    "frontend:build": "cd ../fabric-browser-mac && npm install && npm run build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}
