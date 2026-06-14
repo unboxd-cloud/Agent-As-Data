@@ -13,18 +13,43 @@ SurrealDB = Source of Truth
 
 An agent is not a process first. An agent is a governed object with identity, objective, lifecycle, trust, skills, tools, policies, and memory. The runtime reads this object, evaluates policy, executes work, and writes decisions, events, and audit records back into the Fabric graph.
 
+## Authorship and Operating Model
+
+This project is authored and governed by Chinmay Panda.
+
+The human is not the agent.  
+The human is the author, owner, and decision authority.
+
+The agent is the reconciler loop:
+
+```text
+GitHub → CI/CD → k3s → Agent CRD → Java Reconciler Pod → SurrealDB → Fabric Runtime
+```
+
+Principles:
+
+- Agent = Data
+- Fabric = Runtime
+- Kubernetes = Reconciliation Engine
+- SurrealDB = Source of Truth
+- Human = Author and Approval Gate
+
+The author does not reconcile; the author defines what must be reconciled.
+
 ## Architecture
 
 ```text
-Git
+GitHub
  ↓
-Kubernetes Manifest
+CI/CD
  ↓
-Agent Custom Resource
+k3s
  ↓
-Fabric Operator
+Agent CRD
  ↓
-SurrealDB Record
+Java Reconciler Pod
+ ↓
+SurrealDB
  ↓
 Fabric Runtime
 ```
@@ -93,4 +118,4 @@ CREATE agent:fabric_architect SET
 
 ## Status
 
-This repository currently contains the declarative foundation. The next step is the Fabric Operator, which will reconcile Kubernetes Agent resources into SurrealDB records.
+This repository contains the declarative foundation for Agent-as-Data. The Java reconciler is the primary operator path for reconciling Kubernetes Agent resources into SurrealDB records.
