@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "unboxd-fabric-agent-sdk"
+version = "0.1.0"
+description = "Python SDK for declaring and observing Agent-as-Data Fabric platform state."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [
+  { name = "Chinmay Panda" }
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/unboxd_fabric_agent_sdk"]
