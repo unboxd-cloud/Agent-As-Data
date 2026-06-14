@@ -1,0 +1,14 @@
+{
+  "name": "fabric-agent-reconciler",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kubernetes reconciler for Agent-as-Data resources into SurrealDB",
+  "type": "module",
+  "scripts": {
+    "start": "node src/reconciler.js"
+  },
+  "dependencies": {
+    "@kubernetes/client-node": "^1.0.0",
+    "surrealdb": "^1.1.0"
+  }
+}
