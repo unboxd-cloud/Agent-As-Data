@@ -1,8 +1,14 @@
 platform: Agentic Operational Excellence Platform
 version: 0.1.0
 releaseAuthority: Chinmay Panda
+coreDoctrine:
+  - Agent as Data
+  - Mathematics as Meta
+  - Metal at Core
 requiredDocuments:
+  - docs/platform-core-doctrine.md
   - docs/agentic-operational-excellence-at-scale.md
+  - docs/meta-mathematical-model.md
   - platform/README.md
   - fabricore-os/CONTRACT.md
   - fabricore-os/FLOW.md
@@ -25,6 +31,9 @@ explicitOptInCommands:
   - services start
   - build dmg
 nonNegotiables:
+  - No agent without data
+  - No scale without mathematics
+  - No runtime without metal
   - No hidden authority
   - No unbounded agent execution
   - No source-of-truth writes without governance
