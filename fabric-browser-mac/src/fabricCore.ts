@@ -43,5 +43,5 @@ export async function executeFabricCoreAction(actionId: string): Promise<FabricC
   if (!native) {
     throw new Error("Fabric Core native bridge is only available inside Fabric Mac Core.app");
   }
-  return native.invoke<FabricCoreActionOutput>("execute_fabric_core_action", { actionId });
+  return native.invoke<FabricCoreActionOutput>("execute_fabric_core_action", { action_id: actionId });
 }
