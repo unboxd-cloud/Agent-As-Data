@@ -13,6 +13,53 @@ SurrealDB = Source of Truth
 
 An agent is not a process first. An agent is a governed object with identity, objective, lifecycle, trust, skills, tools, policies, and memory. Fabric reads this object from the source of truth, evaluates policy, drives flow, executes work, and writes decisions, events, and audit records back into the Fabric graph.
 
+## Fabric SaaS Control Pane
+
+The Fabric SaaS Control Pane is published through GitHub Pages:
+
+```text
+https://unboxd-cloud.github.io/Agent-As-Data/
+```
+
+The Control Pane is the tenant-aware author interface for the Fabric Platform.
+
+```text
+Fabric SaaS Platform
+├── Tenant Context
+├── Runtime Face
+├── Flow Face
+└── Control Pane
+```
+
+## CI/CD
+
+The repository uses GitHub Actions as the verification and publication loop.
+
+Primary workflow:
+
+```text
+Full Agent-as-Data Pipeline
+```
+
+The full pipeline checks:
+
+- repository structure
+- required documentation phrases
+- tenant isolation policy
+- Kubernetes manifests
+- Java reconciler build
+- Java SDK build
+- TypeScript SDK check
+- Fabric Browser for Mac build
+- Docker build gate
+- GitHub Pages build gate
+
+Published artifacts and outputs:
+
+- GHCR reconciler image: `ghcr.io/unboxd-cloud/agent-as-data-reconciler-java:latest`
+- Maven package: `cloud.unboxd.fabric:agent-as-data-reconciler:0.1.0`
+- GitHub Pages Control Pane: `https://unboxd-cloud.github.io/Agent-As-Data/`
+
 ## Fabric as a Two-Faced Platform
 
 Fabric is the platform.
@@ -129,64 +176,71 @@ Fabric Platform
 
 ```text
 .
+├── buildpacks/
+│   └── mac-silicon/
 ├── crds/
 │   └── agent-crd.yaml
-├── samples/
-│   └── fabric-architect-agent.yaml
 ├── deploy/
+│   ├── fabric-reconciler-java.yaml
 │   └── surrealdb.yaml
 ├── docs/
-│   └── architecture.md
-└── .github/
-    └── workflows/
-        └── validate.yaml
+│   ├── architecture.md
+│   └── saas-architecture.md
+├── fabric-browser-mac/
+├── fabric-mac-core/
+├── fabric-metal-core/
+├── operator-java/
+├── policies/
+│   └── tenant-isolation.rego
+├── samples/
+│   └── fabric-architect-agent.yaml
+├── sdk-java/
+├── sdk-python/
+├── sdk-typescript/
+└── scripts/
 ```
 
 ## Quick Start
 
-Create the Fabric namespace:
+Run the full local build pack on Apple Silicon Mac:
 
 ```bash
-sudo k3s kubectl create namespace fabric
+chmod +x install.sh
+./install.sh
 ```
 
-Deploy SurrealDB:
+Start the Fabric SaaS Control Pane:
 
 ```bash
-sudo k3s kubectl apply -f deploy/surrealdb.yaml
+chmod +x fabric-mac-core/scripts/start-control-pane.sh
+./fabric-mac-core/scripts/start-control-pane.sh
 ```
 
-Install the Agent CRD:
+Run the live k3s reconciliation proof:
 
 ```bash
-sudo k3s kubectl apply -f crds/agent-crd.yaml
-```
-
-Create the first agent:
-
-```bash
-sudo k3s kubectl apply -f samples/fabric-architect-agent.yaml
-```
-
-Verify:
-
-```bash
-sudo k3s kubectl get agents -A
-sudo k3s kubectl describe agent fabric-architect -n fabric
+chmod +x scripts/self-check.sh scripts/k3s-reconcile-check.sh
+scripts/self-check.sh
+scripts/k3s-reconcile-check.sh
 ```
 
 ## SurrealDB Mapping
 
-The sample Agent resource maps to a SurrealDB record:
+The sample Agent resource maps to a tenant-scoped SurrealDB record:
 
 ```sql
-CREATE agent:fabric_architect SET
-  name = "Fabric Architect",
-  objective = "Build and govern the Fabric",
-  status = "active",
-  trust_score = 100;
+SELECT id, tenant_id, workspace_id, environment, name, objective FROM agent:fabric_architect;
+```
+
+Expected proof:
+
+```text
+id = agent:fabric_architect
+tenant_id = demo-tenant
+workspace_id = default
+environment = local
 ```
 
 ## Status
 
-This repository contains the declarative foundation for Agent-as-Data. The Java reconciler is the primary operator path for reconciling Kubernetes Agent resources into SurrealDB records. Fabric is the platform that acts from the reconciled source-of-truth data through its Runtime Face and Flow Face.
+This repository contains the declarative foundation for Agent-as-Data, the Java reconciler path, tenant-aware Agent data, SDK scaffolds, the Fabric SaaS Control Pane, Apple Silicon Mac/Metal Core checks, tenant isolation policy, and CI/CD publication through GitHub Actions and GitHub Pages.
