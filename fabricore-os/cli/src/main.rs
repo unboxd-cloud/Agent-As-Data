@@ -28,6 +28,8 @@ fn run() -> Result<(), String> {
         "meta-kube" if subcommand == "validate" => validate_meta_kube(),
         "storm" if subcommand == "emit" => emit_storm(),
         "storm" if subcommand == "validate" => validate_storm(),
+        "superstorm" if subcommand == "emit" => emit_superstorm(),
+        "superstorm" if subcommand == "validate" => validate_superstorm(),
         "stream" if subcommand == "emit" => emit_storm(),
         "stream" if subcommand == "validate" => validate_storm(),
         "build" if subcommand == "dmg" => run_script(&root, "fabricore-os/build-fabric-dmg.sh", &[]),
@@ -67,6 +69,25 @@ fn validate_storm() -> Result<(), String> {
     stream::validate_storm(&events)?;
     println!("OK: Fabricore release Storm is valid");
     println!("events={}", events.len());
+    Ok(())
+}
+
+fn emit_superstorm() -> Result<(), String> {
+    let superstorm = stream::fabricore_release_superstorm();
+    stream::validate_superstorm(&superstorm)?;
+    println!("{}", superstorm.line());
+    for event in superstorm.events {
+        println!("{}", event.line());
+    }
+    Ok(())
+}
+
+fn validate_superstorm() -> Result<(), String> {
+    let superstorm = stream::fabricore_release_superstorm();
+    stream::validate_superstorm(&superstorm)?;
+    println!("OK: Fabricore release Superstorm is valid");
+    println!("id={}", superstorm.id);
+    println!("events={}", superstorm.events.len());
     Ok(())
 }
 
@@ -127,9 +148,11 @@ Usage:
   fabricore meta-kube validate
   fabricore storm emit
   fabricore storm validate
+  fabricore superstorm emit
+  fabricore superstorm validate
   fabricore build dmg
   fabricore services start
 
-Default commands are non-mutating. Storm is the governed evidence stream.
+Default commands are non-mutating. Storm is the governed evidence stream. Superstorm is the aggregate multi-path, multi-modal, multi-tenant, multivariate evidence stream.
 "#);
 }
