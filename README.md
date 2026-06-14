@@ -13,6 +13,42 @@ SurrealDB = Source of Truth
 
 An agent is not a process first. An agent is a governed object with identity, objective, lifecycle, trust, skills, tools, policies, and memory. Fabric reads this object from the source of truth, evaluates policy, drives flow, executes work, and writes decisions, events, and audit records back into the Fabric graph.
 
+## Fabric Framework as Flow
+
+The Fabric Framework is a governed flow framework.
+
+Fabric does not start from a process. Fabric starts from authored intent. That intent is declared as data, verified by CI/CD, reconciled by Kubernetes and the Java Reconciler, stored in SurrealDB, and then executed as governed runtime flow.
+
+```text
+Intent
+  ↓
+Declaration
+  ↓
+Verification
+  ↓
+Reconciliation
+  ↓
+Source of Truth
+  ↓
+Runtime Flow
+  ↓
+Decision
+  ↓
+Audit
+```
+
+In this design:
+
+- Intent is authored by the human.
+- Declaration is stored in GitHub and Kubernetes.
+- Verification is performed by CI/CD.
+- Reconciliation is performed by k3s and the Java Reconciler.
+- Source of Truth is stored in SurrealDB.
+- Runtime Flow is executed by Fabric.
+- Decisions and events are written back for audit, replay, and governance.
+
+Fabric is therefore not only the runtime. Fabric is the flow layer that carries governed work from declaration to execution.
+
 ## Authorship and Operating Model
 
 This project is authored and governed by Chinmay Panda.
