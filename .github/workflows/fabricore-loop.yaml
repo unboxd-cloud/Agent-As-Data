@@ -1,0 +1,66 @@
+name: Fabricore Build Loop
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "fabricore-os/**"
+      - ".github/workflows/fabricore-loop.yaml"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  java-loop:
+    name: Java build loop
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build Java Fabricore
+        run: |
+          chmod +x fabricore-os/build-java.sh
+          ./fabricore-os/build-java.sh
+
+      - name: Verify Java Fabricore contract
+        run: |
+          shasum -a 256 -c dist/fabricore.jar.sha256
+          java -jar dist/fabricore.jar contract
+
+      - name: Run safe headless help smoke test
+        run: |
+          java -jar dist/fabricore.jar help
+
+      - name: Upload Java loop artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabricore-java-loop
+          path: |
+            dist/fabricore.jar
+            dist/fabricore.jar.sha256
+          if-no-files-found: error
+
+      - name: Comment loop status
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = '${{ job.status }}';
+            const sha = context.sha.substring(0, 7);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: 1,
+              body: `Fabricore Java build loop completed with status: **${status}** on commit \`${sha}\`.`
+            });
