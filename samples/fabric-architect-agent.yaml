@@ -1,0 +1,43 @@
+apiVersion: fabric.agennext.io/v1alpha1
+kind: Agent
+metadata:
+  name: fabric-architect
+  namespace: fabric
+  labels:
+    app.kubernetes.io/name: fabric-architect
+    app.kubernetes.io/part-of: agent-as-data
+    fabric.agennext.io/type: architect
+spec:
+  displayName: Fabric Architect
+  description: Core Fabric agent responsible for building and governing the Fabric platform.
+  objective: Build and govern the Fabric.
+  status: active
+  lifecycle:
+    state: Active
+  owner:
+    kind: Human
+    id: chinmay
+  trust:
+    score: 100
+  runtime:
+    mode: assisted
+    approvals: required
+  skills:
+    - architecture-design
+    - platform-engineering
+    - governance
+  tools:
+    - surrealdb
+    - kubernetes
+    - github
+    - opentofu
+  policies:
+    - human-at-gate
+    - deny-by-default
+    - cost-control
+  constraints:
+    requireApproval:
+      - production
+      - deletion
+      - financial
+    maxDailyRiskScore: 30
