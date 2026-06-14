@@ -1,0 +1,49 @@
+name: Apple Silicon Mac App CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - fabric-mac-core/**
+      - fabric-browser-mac/**
+      - .github/workflows/mac-silicon-app-ci.yaml
+  pull_request:
+    paths:
+      - fabric-mac-core/**
+      - fabric-browser-mac/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos-arm64:
+    name: Build Fabric Mac Core on macOS ARM64
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Confirm Apple Silicon runner
+        run: |
+          uname -s
+          uname -m
+          test "$(uname -s)" = "Darwin"
+          test "$(uname -m)" = "arm64"
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Build Fabric Browser frontend
+        run: cd fabric-browser-mac && npm install && npm run build
+
+      - name: Build Fabric Mac Core app
+        run: cd fabric-mac-core && npm install && npm run build
