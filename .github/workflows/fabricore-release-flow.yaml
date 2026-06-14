@@ -49,9 +49,39 @@ jobs:
         run: |
           python3 scripts/verify-release-provenance.py
 
+  rust-meta-kube-gate:
+    name: Rust Meta Kube gate
+    needs: provenance-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Rust Fabricore
+        run: |
+          chmod +x fabricore-os/build-single-binary.sh
+          ./fabricore-os/build-single-binary.sh
+
+      - name: Validate Meta Kube
+        run: |
+          ./dist/fabricore meta-kube validate
+
+      - name: Upload Rust gate artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabricore-rust-meta-kube
+          path: |
+            dist/fabricore
+            dist/fabricore.sha256
+          if-no-files-found: error
+
   java-gate:
     name: Java artifact gate
-    needs: provenance-gate
+    needs: rust-meta-kube-gate
     runs-on: ubuntu-latest
     outputs:
       artifact-name: fabricore-java-release-flow
@@ -145,6 +175,7 @@ jobs:
     needs:
       - platform-gate
       - provenance-gate
+      - rust-meta-kube-gate
       - java-gate
       - dmg-gate
     runs-on: ubuntu-latest
@@ -158,10 +189,11 @@ jobs:
           script: |
             const platformStatus = '${{ needs.platform-gate.result }}';
             const provenanceStatus = '${{ needs.provenance-gate.result }}';
+            const rustStatus = '${{ needs.rust-meta-kube-gate.result }}';
             const javaStatus = '${{ needs.java-gate.result }}';
             const dmgStatus = '${{ needs.dmg-gate.result }}';
             const sha = context.sha.substring(0, 7);
-            const passed = platformStatus === 'success' && provenanceStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
+            const passed = platformStatus === 'success' && provenanceStatus === 'success' && rustStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -171,6 +203,7 @@ jobs:
                 ``,
                 `Platform gate: **${platformStatus}**`,
                 `Provenance gate: **${provenanceStatus}**`,
+                `Rust Meta Kube gate: **${rustStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
                 `Release gate: **${passed ? 'READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED - REPAIR LOOP REQUIRED'}**`
@@ -184,9 +217,10 @@ jobs:
           script: |
             const platformStatus = '${{ needs.platform-gate.result }}';
             const provenanceStatus = '${{ needs.provenance-gate.result }}';
+            const rustStatus = '${{ needs.rust-meta-kube-gate.result }}';
             const javaStatus = '${{ needs.java-gate.result }}';
             const dmgStatus = '${{ needs.dmg-gate.result }}';
-            const passed = platformStatus === 'success' && provenanceStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
+            const passed = platformStatus === 'success' && provenanceStatus === 'success' && rustStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -196,6 +230,7 @@ jobs:
                 ``,
                 `Platform gate: **${platformStatus}**`,
                 `Provenance gate: **${provenanceStatus}**`,
+                `Rust Meta Kube gate: **${rustStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
                 `PR gate: **${passed ? 'PASS - READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED'}**`
@@ -203,7 +238,7 @@ jobs:
             });
 
       - name: Attach release assets on tag
-        if: startsWith(github.ref, 'refs/tags/') && needs.platform-gate.result == 'success' && needs.provenance-gate.result == 'success' && needs.java-gate.result == 'success' && needs.dmg-gate.result == 'success'
+        if: startsWith(github.ref, 'refs/tags/') && needs.platform-gate.result == 'success' && needs.provenance-gate.result == 'success' && needs.rust-meta-kube-gate.result == 'success' && needs.java-gate.result == 'success' && needs.dmg-gate.result == 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: |
