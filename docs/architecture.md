@@ -4,12 +4,12 @@
 
 ```text
 Agent = Data
-Fabric = Runtime
+Fabric = Runtime and Flow
 Kubernetes = Reconciliation Engine
 SurrealDB = Source of Truth
 ```
 
-The platform treats every agent as a durable, declarative, governable object. The agent definition is stored in Kubernetes as a custom resource and materialized into SurrealDB as a graph record.
+The platform treats every agent as a durable, declarative, governable object. The agent definition is stored in Kubernetes as a custom resource and materialized into SurrealDB as a graph record. Fabric consumes that source-of-truth record as both the runtime and the flow layer.
 
 ## Human Role
 
@@ -26,14 +26,14 @@ In this architecture:
 - Kubernetes schedules and reconciles runtime components.
 - Java Reconciler watches Agent resources.
 - SurrealDB stores the reconciled Agent record.
-- Fabric Runtime acts from the source-of-truth data.
+- Fabric Runtime and Flow acts from the source-of-truth data.
 
 The author does not reconcile; the author defines what must be reconciled.
 
 ## Operating Model
 
 ```text
-GitHub → CI/CD → k3s → Agent CRD → Java Reconciler Pod → SurrealDB → Fabric Runtime
+GitHub → CI/CD → k3s → Agent CRD → Java Reconciler Pod → SurrealDB → Fabric Runtime and Flow
 ```
 
 ## Layers
@@ -62,9 +62,9 @@ The Java reconciler watches Agent custom resources and reconciles them into Surr
 
 SurrealDB stores identity, agent definitions, memory, tools, policy links, task state, decisions, and events.
 
-### 7. Runtime Layer
+### 7. Fabric Runtime and Flow Layer
 
-The Fabric runtime reads from SurrealDB and executes tasks through governed tools and workflows.
+Fabric reads from SurrealDB, evaluates governed state, routes work, drives flow, and executes tasks through governed tools and workflows.
 
 ## Agent Reconciliation Flow
 
@@ -79,7 +79,7 @@ Java Reconciler Pod
   ↓
 SurrealDB agent record
   ↓
-Fabric Runtime
+Fabric Runtime and Flow
 ```
 
 ## Minimal SurrealDB Shape
