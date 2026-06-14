@@ -1,0 +1,9 @@
+[package]
+name = "fabricore"
+version = "0.1.0"
+edition = "2021"
+description = "Fabricore OS single-binary headless CLI"
+authors = ["Chinmay Panda"]
+license = "Apache-2.0"
+
+[dependencies]
