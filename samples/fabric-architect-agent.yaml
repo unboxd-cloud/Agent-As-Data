@@ -11,6 +11,10 @@ spec:
   displayName: Fabric Architect
   description: Core Fabric agent responsible for building and governing the Fabric platform.
   objective: Build and govern the Fabric.
+  tenancy:
+    tenantId: demo-tenant
+    workspaceId: default
+    environment: local
   status: active
   lifecycle:
     state: Active
