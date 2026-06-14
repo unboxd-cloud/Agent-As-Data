@@ -10,6 +10,7 @@ BOOK_SITE = ROOT / "book-site" / "index.html"
 BOOK_PUBLISH_WORKFLOW = ROOT / ".github" / "workflows" / "publish-agent-book.yaml"
 CORTEX = ROOT / "docs" / "cortex.md"
 AGENT_EYE = ROOT / "docs" / "agent-eye.md"
+AGENT_DESTINATION = ROOT / "docs" / "agent-destination.md"
 
 REQUIRED_TEXT = [
     "releaseAuthority: Chinmay Panda",
@@ -24,10 +25,14 @@ REQUIRED_TEXT = [
     "Repair Agent",
     "Storm",
     "Superstorm",
+    "Agent Destination",
     "docs/cortex.md",
     "docs/agent-eye.md",
+    "docs/agent-destination.md",
     "No Cortex without Agent Eye evidence",
     "No Repair Agent action without Cortex routing",
+    "No Agent Destination without gate allowance",
+    "No release destination without human authority",
     "coreDoctrine:",
     "Agent as Data",
     "Mathematics as Meta",
@@ -97,6 +102,12 @@ REQUIRED_AGENT_EYE_TEXT = [
     "Cortex reasons.",
 ]
 
+REQUIRED_AGENT_DESTINATION_TEXT = [
+    "Agent Destination = the approved target",
+    "No destination without tenant scope.",
+    "No release destination without human authority.",
+]
+
 REQUIRED_FILES = [
     "agent-book/README.md",
     "agent-book/01-agent-as-data.md",
@@ -111,6 +122,7 @@ REQUIRED_FILES = [
     "book-site/index.html",
     "docs/cortex.md",
     "docs/agent-eye.md",
+    "docs/agent-destination.md",
     "docs/platform-core-doctrine.md",
     "docs/meta-mathematical-model.md",
     "docs/agentic-operational-excellence-at-scale.md",
@@ -152,6 +164,8 @@ def main() -> None:
         fail("missing Cortex document")
     if not AGENT_EYE.exists():
         fail("missing Agent Eye document")
+    if not AGENT_DESTINATION.exists():
+        fail("missing Agent Destination document")
 
     require_text(MANIFEST.read_text(), REQUIRED_TEXT, "platform gate")
     require_text(CORE_DOCTRINE.read_text(), REQUIRED_CORE_DOCTRINE_TEXT, "core doctrine")
@@ -160,12 +174,13 @@ def main() -> None:
     require_text(BOOK_PUBLISH_WORKFLOW.read_text(), REQUIRED_PUBLISH_WORKFLOW_TEXT, "Agent Book publish workflow")
     require_text(CORTEX.read_text(), REQUIRED_CORTEX_TEXT, "Cortex")
     require_text(AGENT_EYE.read_text(), REQUIRED_AGENT_EYE_TEXT, "Agent Eye")
+    require_text(AGENT_DESTINATION.read_text(), REQUIRED_AGENT_DESTINATION_TEXT, "Agent Destination")
 
     for file_name in REQUIRED_FILES:
         if not (ROOT / file_name).exists():
             fail(f"platform gate required file missing: {file_name}")
 
-    print("OK: platform gate, Agent Book, Cortex, Agent Eye, and publish path are enforceable")
+    print("OK: platform gate, Agent Book, Cortex, Agent Eye, Agent Destination, and publish path are enforceable")
 
 
 if __name__ == "__main__":
