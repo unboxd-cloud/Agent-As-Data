@@ -75,7 +75,8 @@ body {
   padding: 28px;
 }
 
-.grid.two {
+.grid.two,
+.control-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
@@ -94,13 +95,19 @@ pre {
   overflow: auto;
 }
 
+.output-log {
+  max-height: 360px;
+  white-space: pre-wrap;
+}
+
 label {
   display: grid;
   gap: 8px;
   font-weight: 700;
 }
 
-input {
+input,
+select {
   padding: 12px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 12px;
@@ -116,11 +123,16 @@ input {
   font-weight: 700;
 }
 
-.tabs {
+.tabs,
+.action-grid {
   display: flex;
   gap: 12px;
   margin-top: 24px;
   flex-wrap: wrap;
+}
+
+.action-grid {
+  margin-top: 16px;
 }
 
 button {
@@ -229,11 +241,14 @@ dd {
   gap: 12px;
 }
 
-@media (max-width: 760px) {
-  .grid.two {
+@media (max-width: 900px) {
+  .grid.two,
+  .control-grid {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 760px) {
   .chat-input-row {
     grid-template-columns: 1fr;
   }
