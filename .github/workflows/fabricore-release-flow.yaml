@@ -2,6 +2,13 @@ name: Fabricore Release Flow
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "fabricore-os/**"
+      - "fabric-core/**"
+      - ".github/workflows/fabricore-release-flow.yaml"
   push:
     tags:
       - "v*"
@@ -9,6 +16,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   java-gate:
@@ -111,6 +119,7 @@ jobs:
 
     steps:
       - name: Comment release gate status
+        if: github.event_name != 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
@@ -128,6 +137,27 @@ jobs:
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
                 `Release gate: **${passed ? 'READY FOR AUTHOR REVIEW' : 'BLOCKED - REPAIR LOOP REQUIRED'}**`
+              ].join('\n')
+            });
+
+      - name: Comment PR gate status
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const javaStatus = '${{ needs.java-gate.result }}';
+            const dmgStatus = '${{ needs.dmg-gate.result }}';
+            const passed = javaStatus === 'success' && dmgStatus === 'success';
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                `Fabricore PR release gate completed.`,
+                ``,
+                `Java artifact gate: **${javaStatus}**`,
+                `Mac DMG gate: **${dmgStatus}**`,
+                `PR gate: **${passed ? 'PASS' : 'BLOCKED'}**`
               ].join('\n')
             });
 
