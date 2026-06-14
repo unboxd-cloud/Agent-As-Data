@@ -34,6 +34,9 @@ public final class SurrealDbClient {
         executeSqlRoot("DEFINE NAMESPACE IF NOT EXISTS " + namespace + ";");
         executeSql("""
             DEFINE TABLE IF NOT EXISTS agent SCHEMALESS;
+            DEFINE FIELD IF NOT EXISTS tenant_id ON agent TYPE string;
+            DEFINE FIELD IF NOT EXISTS workspace_id ON agent TYPE string;
+            DEFINE FIELD IF NOT EXISTS environment ON agent TYPE string;
             DEFINE FIELD IF NOT EXISTS name ON agent TYPE string;
             DEFINE FIELD IF NOT EXISTS description ON agent TYPE string;
             DEFINE FIELD IF NOT EXISTS objective ON agent TYPE string;
@@ -49,6 +52,7 @@ public final class SurrealDbClient {
             DEFINE FIELD IF NOT EXISTS constraints ON agent FLEXIBLE TYPE object;
             DEFINE FIELD IF NOT EXISTS kubernetes ON agent FLEXIBLE TYPE object;
             DEFINE FIELD IF NOT EXISTS updated_at ON agent TYPE datetime;
+            DEFINE INDEX IF NOT EXISTS agent_tenant_workspace_idx ON agent FIELDS tenant_id, workspace_id;
         """);
     }
 
