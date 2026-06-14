@@ -30,6 +30,79 @@ In this architecture:
 
 The author does not reconcile; the author defines what must be reconciled.
 
+## Fabric Flow Design
+
+Fabric is designed as a governed flow framework.
+
+A Fabric flow is the movement of authored intent into executable, observable, and auditable runtime state.
+
+```text
+Author Intent
+  ↓
+Declared Agent Data
+  ↓
+CI/CD Verification
+  ↓
+Kubernetes Reconciliation
+  ↓
+Java Agent Reconciliation
+  ↓
+SurrealDB Source of Truth
+  ↓
+Fabric Runtime Flow
+  ↓
+Decision / Event / Action
+  ↓
+Audit / Replay / Governance
+```
+
+The framework separates the flow into clear responsibility zones:
+
+| Zone | Responsibility | Owner |
+| --- | --- | --- |
+| Authoring | Define intent, constraints, and acceptance criteria | Human author |
+| Declaration | Store desired state as Git and Kubernetes data | GitHub + Agent CRD |
+| Verification | Check structure, build, policy, and manifests | CI/CD |
+| Reconciliation | Convert declared state into runtime truth | k3s + Java Reconciler |
+| Source of Truth | Persist reconciled state, identity, memory, policy links, and events | SurrealDB |
+| Runtime Flow | Route work, evaluate state, execute governed tasks, and emit decisions | Fabric |
+| Governance | Audit, replay, inspect, approve, and improve | Human + Fabric controls |
+
+A flow is valid only when it is traceable from authored intent to runtime decision and back to audit evidence.
+
+## SDK Design
+
+Fabric SDKs expose the Agent-as-Data model to applications without bypassing the reconciliation loop.
+
+The SDKs must not become a hidden runtime. They should declare, read, validate, and observe Fabric state while preserving SurrealDB as the source of truth and Kubernetes as the reconciliation engine.
+
+Initial SDK targets:
+
+| SDK | Purpose | Package Target |
+| --- | --- | --- |
+| Java SDK | Native JVM access for the reconciler and enterprise services | `cloud.unboxd.fabric:agent-as-data-sdk` |
+| TypeScript SDK | Web, CLI, dashboard, and developer tooling | `@unboxd/fabric-agent-sdk` |
+| Python SDK | Automation, data workflows, notebooks, and testing | `unboxd-fabric-agent-sdk` |
+
+Core SDK responsibilities:
+
+1. Build Agent declarations.
+2. Validate Agent data before submission.
+3. Convert names to canonical SurrealDB record IDs.
+4. Read reconciled Agent state.
+5. Watch or poll Agent status.
+6. Emit flow events.
+7. Provide helpers for audit, replay, and governance.
+
+SDK boundary rule:
+
+```text
+SDKs declare and observe.
+The reconciler reconciles.
+SurrealDB stores truth.
+Fabric executes flow.
+```
+
 ## Operating Model
 
 ```text
@@ -65,6 +138,10 @@ SurrealDB stores identity, agent definitions, memory, tools, policy links, task 
 ### 7. Fabric Runtime and Flow Layer
 
 Fabric reads from SurrealDB, evaluates governed state, routes work, drives flow, and executes tasks through governed tools and workflows.
+
+### 8. SDK Layer
+
+SDKs let applications declare, validate, read, and observe Fabric flow state without replacing the reconciler or bypassing governance.
 
 ## Agent Reconciliation Flow
 
