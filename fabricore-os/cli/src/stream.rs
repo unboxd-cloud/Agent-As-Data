@@ -32,6 +32,18 @@ pub struct StormEvent {
     pub variables: StormVariables,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Superstorm {
+    pub id: String,
+    pub tenant_id: String,
+    pub workspace_id: String,
+    pub environment: String,
+    pub paths: Vec<String>,
+    pub modalities: Vec<String>,
+    pub variables: Vec<String>,
+    pub events: Vec<StormEvent>,
+}
+
 impl StormVariables {
     pub fn fabricore_default(path_result: &str, artifact_result: &str, authority_result: &str) -> Self {
         Self {
@@ -63,6 +75,22 @@ impl StormEvent {
             self.variables.artifact_result,
             self.variables.authority_result,
             self.evidence
+        )
+    }
+}
+
+impl Superstorm {
+    pub fn line(&self) -> String {
+        format!(
+            "superstorm id={} tenant={} workspace={} environment={} paths={} modalities={} variables={} events={}",
+            self.id,
+            self.tenant_id,
+            self.workspace_id,
+            self.environment,
+            self.paths.join(","),
+            self.modalities.join(","),
+            self.variables.join(","),
+            self.events.len()
         )
     }
 }
@@ -121,6 +149,36 @@ pub fn fabricore_release_storm() -> Vec<StormEvent> {
     ]
 }
 
+pub fn fabricore_release_superstorm() -> Superstorm {
+    Superstorm {
+        id: "superstorm:fabricore-v0.1.0".to_string(),
+        tenant_id: "default".to_string(),
+        workspace_id: "release".to_string(),
+        environment: "pr-gate".to_string(),
+        paths: vec![
+            "platform-doctrine-path".into(),
+            "provenance-path".into(),
+            "rust-meta-kube-path".into(),
+            "storm-evidence-path".into(),
+            "java-artifact-path".into(),
+            "mac-dmg-path".into(),
+            "release-handover-path".into(),
+        ],
+        modalities: vec!["text".into(), "code".into(), "artifact".into(), "workflow".into(), "metric".into()],
+        variables: vec![
+            "tenant_id".into(),
+            "workspace_id".into(),
+            "environment".into(),
+            "policy_result".into(),
+            "provenance_result".into(),
+            "path_result".into(),
+            "artifact_result".into(),
+            "authority_result".into(),
+        ],
+        events: fabricore_release_storm(),
+    }
+}
+
 pub fn validate_storm(events: &[StormEvent]) -> Result<(), String> {
     if events.is_empty() {
         return Err("storm must not be empty".into());
@@ -146,6 +204,26 @@ pub fn validate_storm(events: &[StormEvent]) -> Result<(), String> {
         validate_variables(&event.variables)?;
     }
 
+    Ok(())
+}
+
+pub fn validate_superstorm(superstorm: &Superstorm) -> Result<(), String> {
+    if superstorm.id.trim().is_empty() {
+        return Err("superstorm id must not be empty".into());
+    }
+    if superstorm.tenant_id.trim().is_empty() || superstorm.workspace_id.trim().is_empty() {
+        return Err("superstorm must be tenant and workspace scoped".into());
+    }
+    if superstorm.paths.len() < 3 {
+        return Err("superstorm must contain multiple governed paths".into());
+    }
+    if superstorm.modalities.len() < 3 {
+        return Err("superstorm must contain multiple modalities".into());
+    }
+    if superstorm.variables.len() < 6 {
+        return Err("superstorm must contain multivariate signals".into());
+    }
+    validate_storm(&superstorm.events)?;
     Ok(())
 }
 
