@@ -3,6 +3,9 @@ set -euo pipefail
 
 NAMESPACE="${NAMESPACE:-fabric}"
 AGENT_NAME="${AGENT_NAME:-fabric-architect}"
+TENANT_ID="${TENANT_ID:-demo-tenant}"
+WORKSPACE_ID="${WORKSPACE_ID:-default}"
+ENVIRONMENT="${ENVIRONMENT:-local}"
 RECORD_ID="agent:${AGENT_NAME//-/_}"
 KUBECTL="${KUBECTL:-sudo k3s kubectl}"
 
@@ -57,7 +60,7 @@ for i in $(seq 1 30); do
   sleep 5
 done
 
-log "[7/7] Proving Kubernetes pod, Agent, logs, and SurrealDB record"
+log "[7/7] Proving Kubernetes pod, Agent, logs, tenant fields, and SurrealDB record"
 $KUBECTL get pods -n "$NAMESPACE" -l app.kubernetes.io/name=fabric-reconciler-java
 $KUBECTL get agent "$AGENT_NAME" -n "$NAMESPACE" -o wide
 $KUBECTL get agent "$AGENT_NAME" -n "$NAMESPACE" -o jsonpath='{.status}' && echo
@@ -76,13 +79,17 @@ QUERY_OUTPUT="$($KUBECTL run surrealdb-check \
   -i \
   --restart=Never \
   --image=curlimages/curl:8.11.1 \
-  --command -- sh -c "curl -sS -u root:ChangeMeNow -H 'NS: agennext' -H 'DB: fabric' -H 'Accept: application/json' -H 'Content-Type: application/surrealql' --data 'SELECT * FROM ${RECORD_ID};' http://surrealdb.fabric.svc.cluster.local:8000/sql")"
+  --command -- sh -c "curl -sS -u root:ChangeMeNow -H 'NS: agennext' -H 'DB: fabric' -H 'Accept: application/json' -H 'Content-Type: application/surrealql' --data 'SELECT id, tenant_id, workspace_id, environment, name, objective FROM ${RECORD_ID};' http://surrealdb.fabric.svc.cluster.local:8000/sql")"
 
 echo "$QUERY_OUTPUT"
 echo "$QUERY_OUTPUT" | grep -q "$RECORD_ID"
+echo "$QUERY_OUTPUT" | grep -q "$TENANT_ID"
+echo "$QUERY_OUTPUT" | grep -q "$WORKSPACE_ID"
+echo "$QUERY_OUTPUT" | grep -q "$ENVIRONMENT"
 
 log "Runtime reconciliation check complete"
 echo "PASS: fabric-reconciler-java pod is Running"
 echo "PASS: agent.fabric.agennext.io/${AGENT_NAME} exists"
 echo "PASS: Java reconciler logs show reconciliation"
 echo "PASS: SurrealDB query returns ${RECORD_ID}"
+echo "PASS: SurrealDB record is tenant-scoped: ${TENANT_ID}/${WORKSPACE_ID}/${ENVIRONMENT}"
