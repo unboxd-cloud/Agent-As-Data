@@ -1,0 +1,97 @@
+use std::env;
+use std::path::{Path, PathBuf};
+use std::process::{Command, ExitCode};
+
+fn main() -> ExitCode {
+    match run() {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(error) => {
+            eprintln!("FAIL: {error}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+fn run() -> Result<(), String> {
+    let args: Vec<String> = env::args().skip(1).collect();
+    let command = args.first().map(String::as_str).unwrap_or("help");
+    let subcommand = args.get(1).map(String::as_str).unwrap_or("");
+    let root = repo_root()?;
+
+    match command {
+        "check" => run_script(&root, "fabric-core/scripts/headless.sh", &["check"]),
+        "status" => run_script(&root, "fabric-core/scripts/headless.sh", &["status"]),
+        "prove" => run_script(&root, "fabric-core/scripts/headless.sh", &["prove"]),
+        "build" if subcommand == "dmg" => run_script(&root, "fabricore-os/build-fabric-dmg.sh", &[]),
+        "services" if subcommand == "start" => run_script(&root, "fabric-core/scripts/start-local-services.sh", &[]),
+        "help" | "--help" | "-h" => {
+            usage();
+            Ok(())
+        }
+        _ => {
+            usage();
+            Err(format!("unsupported command: {} {}", command, subcommand).trim().to_string())
+        }
+    }
+}
+
+fn run_script(root: &Path, script: &str, args: &[&str]) -> Result<(), String> {
+    if script.starts_with('/') || script.contains("..") || !script.ends_with(".sh") {
+        return Err(format!("unsafe script path: {script}"));
+    }
+
+    let script_path = root.join(script);
+    if !script_path.exists() {
+        return Err(format!("script not found: {}", script_path.display()));
+    }
+
+    let status = Command::new("/bin/bash")
+        .arg(script_path)
+        .args(args)
+        .current_dir(root)
+        .env_clear()
+        .env("PATH", "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin")
+        .status()
+        .map_err(|error| format!("failed to run {script}: {error}"))?;
+
+    if !status.success() {
+        return Err(format!("script failed: {script}"));
+    }
+
+    Ok(())
+}
+
+fn repo_root() -> Result<PathBuf, String> {
+    if let Ok(value) = env::var("FABRICORE_ROOT") {
+        let root = PathBuf::from(value);
+        if root.join("fabric-core/scripts/headless.sh").exists() {
+            return Ok(root);
+        }
+    }
+
+    let current = env::current_dir().map_err(|error| format!("cannot resolve current directory: {error}"))?;
+    let mut candidate = Some(current.as_path());
+
+    while let Some(path) = candidate {
+        if path.join("fabric-core/scripts/headless.sh").exists() {
+            return Ok(path.to_path_buf());
+        }
+        candidate = path.parent();
+    }
+
+    Err("cannot locate repo root; set FABRICORE_ROOT".into())
+}
+
+fn usage() {
+    println!(r#"Fabricore OS
+
+Usage:
+  fabricore check
+  fabricore status
+  fabricore prove
+  fabricore build dmg
+  fabricore services start
+
+Default commands are non-mutating. Service start is explicit opt-in.
+"#);
+}
