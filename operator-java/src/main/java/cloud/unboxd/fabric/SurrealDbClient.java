@@ -31,6 +31,7 @@ public final class SurrealDbClient {
     }
 
     public void ensureSchema() throws Exception {
+        executeSqlRoot("DEFINE NAMESPACE IF NOT EXISTS " + namespace + ";");
         executeSql("""
             DEFINE TABLE IF NOT EXISTS agent SCHEMALESS;
             DEFINE FIELD IF NOT EXISTS name ON agent TYPE string;
@@ -53,26 +54,39 @@ public final class SurrealDbClient {
 
     public void upsertAgent(String recordId, Map<String, Object> data) throws Exception {
         String json = objectMapper.writeValueAsString(data);
-        String sql = "UPSERT " + recordId + " CONTENT " + json + ";";
-        executeSql(sql);
+        executeSql("UPSERT " + recordId + " CONTENT " + json + ";");
     }
 
     public void deleteAgent(String recordId) throws Exception {
         executeSql("DELETE " + recordId + ";");
     }
 
+    private void executeSqlRoot(String sql) throws Exception {
+        HttpRequest request = baseRequest(sql)
+                .header("Auth-Level", "root")
+                .build();
+        send(request);
+    }
+
     private void executeSql(String sql) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
+        HttpRequest request = baseRequest(sql)
+                .header("NS", namespace)
+                .header("DB", database)
+                .build();
+        send(request);
+    }
+
+    private HttpRequest.Builder baseRequest(String sql) {
+        return HttpRequest.newBuilder()
                 .uri(URI.create(endpoint + "/sql"))
                 .timeout(Duration.ofSeconds(30))
                 .header("Authorization", "Basic " + basicAuth)
-                .header("NS", namespace)
-                .header("DB", database)
                 .header("Accept", "application/json")
                 .header("Content-Type", "application/surrealql")
-                .POST(HttpRequest.BodyPublishers.ofString(sql))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(sql));
+    }
 
+    private void send(HttpRequest request) throws Exception {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new IllegalStateException("SurrealDB request failed: HTTP " + response.statusCode() + " body=" + response.body());
