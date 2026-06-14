@@ -1,0 +1,36 @@
+model
+  schema 1.1
+
+type user
+
+type tenant
+  relations
+    define owner: [user]
+    define admin: [user] or owner
+    define member: [user] or admin
+    define auditor: [user]
+    define approver: [user] or admin
+
+type workspace
+  relations
+    define parent: [tenant]
+    define owner: [user] or owner from parent
+    define admin: [user] or admin from parent
+    define member: [user] or member from parent
+    define auditor: [user] or auditor from parent
+    define approver: [user] or approver from parent
+
+type agent
+  relations
+    define parent: [workspace]
+    define owner: [user] or owner from parent
+    define author: [user] or member from parent
+    define reviewer: [user] or approver from parent
+    define approver: [user] or approver from parent
+    define auditor: [user] or auditor from parent
+
+    define can_read: owner or author or reviewer or approver or auditor
+    define can_declare: owner or author
+    define can_review: reviewer
+    define can_approve: approver
+    define can_audit: auditor
