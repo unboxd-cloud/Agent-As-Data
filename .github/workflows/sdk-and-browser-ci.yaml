@@ -1,0 +1,68 @@
+name: SDK and Fabric Browser CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  java-sdk:
+    name: Java SDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build Java SDK
+        run: cd sdk-java && mvn -B -DskipTests package
+
+  typescript-sdk:
+    name: TypeScript SDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: sdk-typescript/package-lock.json
+
+      - name: Install dependencies
+        run: cd sdk-typescript && npm install
+
+      - name: Type-check TypeScript SDK
+        run: cd sdk-typescript && npm run check
+
+  fabric-browser-mac:
+    name: Fabric Browser for Mac
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: fabric-browser-mac/package-lock.json
+
+      - name: Install dependencies
+        run: cd fabric-browser-mac && npm install
+
+      - name: Build Fabric Browser for Mac
+        run: cd fabric-browser-mac && npm run build
