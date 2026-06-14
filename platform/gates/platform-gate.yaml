@@ -1,10 +1,26 @@
 platform: Agentic Operational Excellence Platform
 version: 0.1.0
 releaseAuthority: Chinmay Panda
+bookBinding:
+  name: Agent Book
+  path: agent-book/README.md
+  version: 0.1.0
+  rule: The platform is bound to the book; the book explains the doctrine; the gates enforce it.
 coreDoctrine:
   - Agent as Data
   - Mathematics as Meta
   - Metal at Core
+requiredBookChapters:
+  - agent-book/README.md
+  - agent-book/01-agent-as-data.md
+  - agent-book/02-mathematics-as-meta.md
+  - agent-book/03-metal-at-core.md
+  - agent-book/04-meta-kube.md
+  - agent-book/05-storm.md
+  - agent-book/06-superstorm.md
+  - agent-book/07-repair-agent.md
+  - agent-book/08-release-gates.md
+  - agent-book/09-operational-excellence.md
 requiredDocuments:
   - docs/platform-core-doctrine.md
   - docs/agentic-operational-excellence-at-scale.md
@@ -40,4 +56,5 @@ nonNegotiables:
   - No artifact without provenance
   - No release without a named gate
   - No failure without a repair loop
+  - No platform without a bound book
   - No scale before surface minimization
