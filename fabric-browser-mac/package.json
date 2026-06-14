@@ -1,0 +1,22 @@
+{
+  "name": "fabric-browser-mac",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mac browser shell for inspecting Agent-as-Data Fabric Platform state.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -p tsconfig.json && vite build",
+    "preview": "vite preview",
+    "check": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest",
+    "typescript": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {},
+  "license": "Apache-2.0"
+}
