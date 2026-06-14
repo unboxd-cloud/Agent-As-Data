@@ -72,6 +72,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  publish-npm:
+    name: Publish TypeScript SDK to GitHub npm Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: https://npm.pkg.github.com
+          scope: '@unboxd'
+
+      - name: Build TypeScript SDK
+        run: cd sdk-typescript && npm install && npm run check
+
+      - name: Publish TypeScript SDK
+        run: npm publish
+        working-directory: sdk-typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   publish-pages:
     name: Publish Fabric Control Pane to GitHub Pages
     runs-on: ubuntu-latest
