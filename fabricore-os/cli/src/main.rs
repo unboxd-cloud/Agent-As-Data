@@ -26,8 +26,10 @@ fn run() -> Result<(), String> {
         "status" => run_script(&root, "fabric-core/scripts/headless.sh", &["status"]),
         "prove" => run_script(&root, "fabric-core/scripts/headless.sh", &["prove"]),
         "meta-kube" if subcommand == "validate" => validate_meta_kube(),
-        "stream" if subcommand == "emit" => emit_stream(),
-        "stream" if subcommand == "validate" => validate_stream(),
+        "storm" if subcommand == "emit" => emit_storm(),
+        "storm" if subcommand == "validate" => validate_storm(),
+        "stream" if subcommand == "emit" => emit_storm(),
+        "stream" if subcommand == "validate" => validate_storm(),
         "build" if subcommand == "dmg" => run_script(&root, "fabricore-os/build-fabric-dmg.sh", &[]),
         "services" if subcommand == "start" => run_script(&root, "fabric-core/scripts/start-local-services.sh", &[]),
         "help" | "--help" | "-h" => {
@@ -51,19 +53,19 @@ fn validate_meta_kube() -> Result<(), String> {
     Ok(())
 }
 
-fn emit_stream() -> Result<(), String> {
-    let events = stream::fabricore_release_stream();
-    stream::validate_stream(&events)?;
+fn emit_storm() -> Result<(), String> {
+    let events = stream::fabricore_release_storm();
+    stream::validate_storm(&events)?;
     for event in events {
         println!("{}", event.line());
     }
     Ok(())
 }
 
-fn validate_stream() -> Result<(), String> {
-    let events = stream::fabricore_release_stream();
-    stream::validate_stream(&events)?;
-    println!("OK: Fabricore release stream is valid");
+fn validate_storm() -> Result<(), String> {
+    let events = stream::fabricore_release_storm();
+    stream::validate_storm(&events)?;
+    println!("OK: Fabricore release Storm is valid");
     println!("events={}", events.len());
     Ok(())
 }
@@ -123,11 +125,11 @@ Usage:
   fabricore status
   fabricore prove
   fabricore meta-kube validate
-  fabricore stream emit
-  fabricore stream validate
+  fabricore storm emit
+  fabricore storm validate
   fabricore build dmg
   fabricore services start
 
-Default commands are non-mutating. Service start is explicit opt-in.
+Default commands are non-mutating. Storm is the governed evidence stream.
 "#);
 }
