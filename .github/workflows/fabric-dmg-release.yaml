@@ -1,0 +1,62 @@
+name: Fabric DMG Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-fabric-dmg:
+    name: Build fabric.dmg
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Apple Silicon runner
+        run: |
+          set -euo pipefail
+          test "$(uname -s)" = "Darwin"
+          test "$(uname -m)" = "arm64"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - name: Install Tauri dependencies
+        run: |
+          brew install create-dmg || true
+
+      - name: Headless Fabricore check
+        run: |
+          chmod +x fabricore-os/bin/fabricore fabric-core/scripts/*.sh fabric-metal-core/scripts/*.sh pod-manager/scripts/*.sh
+          ./fabricore-os/bin/fabricore check
+
+      - name: Build fabric.dmg
+        run: |
+          chmod +x fabricore-os/bin/fabricore fabricore-os/build-fabric-dmg.sh
+          ./fabricore-os/bin/fabricore build dmg
+
+      - name: Upload fabric.dmg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabric.dmg
+          path: fabric.dmg
+          if-no-files-found: error
+
+      - name: Attach fabric.dmg to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: fabric.dmg
