@@ -1,0 +1,34 @@
+platform: Agentic Operational Excellence Platform
+version: 0.1.0
+releaseAuthority: Chinmay Panda
+requiredDocuments:
+  - docs/agentic-operational-excellence-at-scale.md
+  - platform/README.md
+  - fabricore-os/CONTRACT.md
+  - fabricore-os/FLOW.md
+  - fabric-core/CONTRACT.md
+  - fabric-core/SURFACE.md
+  - release-gates/fabricore-v0.1.0.provenance.json
+requiredWorkflows:
+  - .github/workflows/fabricore-release-flow.yaml
+  - .github/workflows/fabricore-loop.yaml
+requiredArtifacts:
+  - dist/fabricore.jar
+  - dist/fabricore.jar.sha256
+  - fabric.dmg
+  - fabric.dmg.sha256
+defaultSafeCommands:
+  - check
+  - status
+  - prove
+explicitOptInCommands:
+  - services start
+  - build dmg
+nonNegotiables:
+  - No hidden authority
+  - No unbounded agent execution
+  - No source-of-truth writes without governance
+  - No artifact without provenance
+  - No release without a named gate
+  - No failure without a repair loop
+  - No scale before surface minimization
