@@ -8,6 +8,8 @@ on:
     paths:
       - "fabricore-os/**"
       - "fabric-core/**"
+      - "release-gates/**"
+      - "scripts/verify-release-provenance.py"
       - ".github/workflows/fabricore-release-flow.yaml"
   push:
     tags:
@@ -19,8 +21,21 @@ permissions:
   pull-requests: write
 
 jobs:
+  provenance-gate:
+    name: Provenance gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify release provenance
+        run: |
+          python3 scripts/verify-release-provenance.py
+
   java-gate:
     name: Java artifact gate
+    needs: provenance-gate
     runs-on: ubuntu-latest
     outputs:
       artifact-name: fabricore-java-release-flow
@@ -112,6 +127,7 @@ jobs:
   release-handover:
     name: Release gate handover
     needs:
+      - provenance-gate
       - java-gate
       - dmg-gate
     runs-on: ubuntu-latest
@@ -123,10 +139,11 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const provenanceStatus = '${{ needs.provenance-gate.result }}';
             const javaStatus = '${{ needs.java-gate.result }}';
             const dmgStatus = '${{ needs.dmg-gate.result }}';
             const sha = context.sha.substring(0, 7);
-            const passed = javaStatus === 'success' && dmgStatus === 'success';
+            const passed = provenanceStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -134,9 +151,10 @@ jobs:
               body: [
                 `Fabricore release flow handover for commit \`${sha}\`.`,
                 ``,
+                `Provenance gate: **${provenanceStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
-                `Release gate: **${passed ? 'READY FOR AUTHOR REVIEW' : 'BLOCKED - REPAIR LOOP REQUIRED'}**`
+                `Release gate: **${passed ? 'READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED - REPAIR LOOP REQUIRED'}**`
               ].join('\n')
             });
 
@@ -145,9 +163,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const provenanceStatus = '${{ needs.provenance-gate.result }}';
             const javaStatus = '${{ needs.java-gate.result }}';
             const dmgStatus = '${{ needs.dmg-gate.result }}';
-            const passed = javaStatus === 'success' && dmgStatus === 'success';
+            const passed = provenanceStatus === 'success' && javaStatus === 'success' && dmgStatus === 'success';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -155,14 +174,15 @@ jobs:
               body: [
                 `Fabricore PR release gate completed.`,
                 ``,
+                `Provenance gate: **${provenanceStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
-                `PR gate: **${passed ? 'PASS' : 'BLOCKED'}**`
+                `PR gate: **${passed ? 'PASS - READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED'}**`
               ].join('\n')
             });
 
       - name: Attach release assets on tag
-        if: startsWith(github.ref, 'refs/tags/') && needs.java-gate.result == 'success' && needs.dmg-gate.result == 'success'
+        if: startsWith(github.ref, 'refs/tags/') && needs.provenance-gate.result == 'success' && needs.java-gate.result == 'success' && needs.dmg-gate.result == 'success'
         uses: softprops/action-gh-release@v2
         with:
           files: |
