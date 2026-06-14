@@ -1,0 +1,258 @@
+openapi: 3.1.0
+info:
+  title: Fabric Control Plane API
+  version: 0.1.0
+  description: Tenant-aware API contract for Agent-as-Data control plane operations.
+servers:
+  - url: https://unboxd-cloud.github.io/Agent-As-Data
+    description: Published Fabric Control Pane
+  - url: http://localhost:5173
+    description: Local Fabric Control Pane
+paths:
+  /api/tenants/{tenantId}/workspaces/{workspaceId}/agents:
+    get:
+      summary: List tenant-scoped agents
+      operationId: listAgents
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/WorkspaceId'
+        - $ref: '#/components/parameters/Environment'
+      responses:
+        '200':
+          description: Tenant-scoped agents
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - data
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Agent'
+    post:
+      summary: Declare a tenant-scoped agent intent
+      operationId: declareAgent
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/WorkspaceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentDeclaration'
+      responses:
+        '202':
+          description: Agent intent accepted for GitOps reconciliation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationIntent'
+  /api/tenants/{tenantId}/workspaces/{workspaceId}/agents/{agentName}:
+    get:
+      summary: Get one tenant-scoped agent
+      operationId: getAgent
+      parameters:
+        - $ref: '#/components/parameters/TenantId'
+        - $ref: '#/components/parameters/WorkspaceId'
+        - name: agentName
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '404':
+          description: Agent not found in tenant/workspace scope
+  /api/health:
+    get:
+      summary: Health check
+      operationId: health
+      responses:
+        '200':
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - ok
+components:
+  parameters:
+    TenantId:
+      name: tenantId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    WorkspaceId:
+      name: workspaceId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+    Environment:
+      name: environment
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+          - local
+          - dev
+          - staging
+          - production
+  schemas:
+    AgentDeclaration:
+      type: object
+      required:
+        - displayName
+        - objective
+        - tenancy
+      properties:
+        displayName:
+          type: string
+        description:
+          type: string
+        objective:
+          type: string
+        tenancy:
+          $ref: '#/components/schemas/Tenancy'
+        status:
+          type: string
+          enum:
+            - draft
+            - active
+            - probation
+            - suspended
+            - archived
+          default: draft
+        lifecycle:
+          type: object
+          properties:
+            state:
+              type: string
+        runtime:
+          type: object
+          properties:
+            mode:
+              type: string
+              enum:
+                - manual
+                - assisted
+                - autonomous
+            approvals:
+              type: string
+              enum:
+                - none
+                - required
+        trust:
+          type: object
+          properties:
+            score:
+              type: integer
+              minimum: 0
+              maximum: 100
+        skills:
+          type: array
+          items:
+            type: string
+        tools:
+          type: array
+          items:
+            type: string
+        policies:
+          type: array
+          items:
+            type: string
+        constraints:
+          type: object
+          additionalProperties: true
+    Agent:
+      allOf:
+        - $ref: '#/components/schemas/AgentDeclaration'
+        - type: object
+          required:
+            - id
+            - tenant_id
+            - workspace_id
+            - environment
+          properties:
+            id:
+              type: string
+              example: agent:fabric_architect
+            tenant_id:
+              type: string
+            workspace_id:
+              type: string
+            environment:
+              type: string
+              enum:
+                - local
+                - dev
+                - staging
+                - production
+            kubernetes:
+              type: object
+              properties:
+                namespace:
+                  type: string
+                name:
+                  type: string
+                uid:
+                  type: string
+                generation:
+                  type: integer
+            updated_at:
+              type: string
+              format: date-time
+    Tenancy:
+      type: object
+      required:
+        - tenantId
+        - workspaceId
+        - environment
+      properties:
+        tenantId:
+          type: string
+          minLength: 1
+        workspaceId:
+          type: string
+          minLength: 1
+        environment:
+          type: string
+          enum:
+            - local
+            - dev
+            - staging
+            - production
+    ReconciliationIntent:
+      type: object
+      required:
+        - status
+        - target
+      properties:
+        status:
+          type: string
+          enum:
+            - accepted
+        target:
+          type: string
+          enum:
+            - gitops
+        message:
+          type: string
