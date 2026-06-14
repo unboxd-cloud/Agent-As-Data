@@ -50,7 +50,7 @@ jobs:
           python3 scripts/verify-release-provenance.py
 
   rust-meta-kube-gate:
-    name: Rust Meta Kube and Stream gate
+    name: Rust Meta Kube and Superstorm gate
     needs: provenance-gate
     runs-on: ubuntu-latest
 
@@ -70,15 +70,17 @@ jobs:
         run: |
           ./dist/fabricore meta-kube validate
 
-      - name: Validate platform stream
+      - name: Validate Storm and Superstorm
         run: |
-          ./dist/fabricore stream validate
-          ./dist/fabricore stream emit
+          ./dist/fabricore storm validate
+          ./dist/fabricore storm emit
+          ./dist/fabricore superstorm validate
+          ./dist/fabricore superstorm emit
 
       - name: Upload Rust gate artifact
         uses: actions/upload-artifact@v4
         with:
-          name: fabricore-rust-meta-kube
+          name: fabricore-rust-meta-kube-superstorm
           path: |
             dist/fabricore
             dist/fabricore.sha256
@@ -208,7 +210,7 @@ jobs:
                 ``,
                 `Platform gate: **${platformStatus}**`,
                 `Provenance gate: **${provenanceStatus}**`,
-                `Rust Meta Kube and Stream gate: **${rustStatus}**`,
+                `Rust Meta Kube and Superstorm gate: **${rustStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
                 `Release gate: **${passed ? 'READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED - REPAIR LOOP REQUIRED'}**`
@@ -235,7 +237,7 @@ jobs:
                 ``,
                 `Platform gate: **${platformStatus}**`,
                 `Provenance gate: **${provenanceStatus}**`,
-                `Rust Meta Kube and Stream gate: **${rustStatus}**`,
+                `Rust Meta Kube and Superstorm gate: **${rustStatus}**`,
                 `Java artifact gate: **${javaStatus}**`,
                 `Mac DMG gate: **${dmgStatus}**`,
                 `PR gate: **${passed ? 'PASS - READY FOR CHINMAY PANDA REVIEW' : 'BLOCKED'}**`
