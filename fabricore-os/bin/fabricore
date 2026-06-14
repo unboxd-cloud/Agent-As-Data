@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$ROOT_DIR"
+
+COMMAND="${1:-help}"
+SUBCOMMAND="${2:-}"
+
+usage() {
+  cat <<'USAGE'
+Fabricore OS
+
+Usage:
+  fabricore check
+  fabricore status
+  fabricore prove
+  fabricore build dmg
+  fabricore services start
+
+Default commands are non-mutating. Service start is explicit opt-in.
+USAGE
+}
+
+case "$COMMAND" in
+  check)
+    chmod +x fabric-core/scripts/headless.sh
+    fabric-core/scripts/headless.sh check
+    ;;
+  status)
+    chmod +x fabric-core/scripts/headless.sh
+    fabric-core/scripts/headless.sh status
+    ;;
+  prove)
+    chmod +x fabric-core/scripts/headless.sh
+    fabric-core/scripts/headless.sh prove
+    ;;
+  build)
+    case "$SUBCOMMAND" in
+      dmg)
+        chmod +x fabricore-os/build-fabric-dmg.sh
+        fabricore-os/build-fabric-dmg.sh
+        ;;
+      *)
+        echo "FAIL: unsupported build target: $SUBCOMMAND" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+    ;;
+  services)
+    case "$SUBCOMMAND" in
+      start)
+        chmod +x fabric-core/scripts/start-local-services.sh
+        fabric-core/scripts/start-local-services.sh
+        ;;
+      *)
+        echo "FAIL: unsupported services command: $SUBCOMMAND" >&2
+        usage >&2
+        exit 1
+        ;;
+    esac
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *)
+    echo "FAIL: unsupported command: $COMMAND" >&2
+    usage >&2
+    exit 1
+    ;;
+esac
