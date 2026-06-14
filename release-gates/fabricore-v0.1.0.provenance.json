@@ -1,0 +1,32 @@
+{
+  "release": "fabricore-v0.1.0",
+  "repository": "unboxd-cloud/Agent-As-Data",
+  "pullRequest": 3,
+  "baseBranch": "main",
+  "headBranch": "release/fabricore-gate",
+  "baseSha": "0e26a4f8c6d1987bef027f6486222a603ffcd9e8",
+  "headSha": "598ab82d7d32e6300db15d596851874465afa8f5",
+  "releaseAuthority": "Chinmay Panda",
+  "buildOperator": "GitHub Actions",
+  "workflow": ".github/workflows/fabricore-release-flow.yaml",
+  "requiredArtifacts": [
+    "dist/fabricore.jar",
+    "dist/fabricore.jar.sha256",
+    "fabric.dmg",
+    "fabric.dmg.sha256"
+  ],
+  "defaultSafeCommands": [
+    "check",
+    "status",
+    "prove"
+  ],
+  "explicitOptInCommands": [
+    "services start",
+    "build dmg"
+  ],
+  "gateIssues": {
+    "buildLoop": 1,
+    "releaseGate": 2
+  },
+  "approvalRequiredFrom": "Chinmay Panda"
+}
