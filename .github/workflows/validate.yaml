@@ -1,0 +1,42 @@
+name: Validate Manifests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  validate-yaml:
+    name: Validate YAML
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate YAML syntax
+        run: |
+          python - <<'PY'
+          import pathlib
+          import sys
+          import yaml
+
+          paths = list(pathlib.Path('.').rglob('*.yaml')) + list(pathlib.Path('.').rglob('*.yml'))
+          failed = False
+          for path in paths:
+              try:
+                  with path.open() as f:
+                      list(yaml.safe_load_all(f))
+                  print(f"OK {path}")
+              except Exception as exc:
+                  print(f"ERROR {path}: {exc}")
+                  failed = True
+          if failed:
+              sys.exit(1)
+          PY
+
+      - name: Render Kubernetes manifests
+        run: |
+          kubectl apply --dry-run=client -f crds/agent-crd.yaml
+          kubectl apply --dry-run=client -f deploy/surrealdb.yaml
+          kubectl apply --dry-run=client -f samples/fabric-architect-agent.yaml
