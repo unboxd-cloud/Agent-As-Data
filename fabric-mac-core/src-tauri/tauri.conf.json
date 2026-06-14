@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "cloud.unboxd.fabric.mac-core",
   "build": {
-    "beforeDevCommand": "cd ../fabric-browser-mac && npm install && npm run dev",
-    "beforeBuildCommand": "cd ../fabric-browser-mac && npm install && npm run build",
+    "beforeDevCommand": "cd ../../fabric-browser-mac && npm install && npm run dev",
+    "beforeBuildCommand": "cd ../../fabric-browser-mac && npm install && npm run build",
     "devUrl": "http://localhost:5173",
     "frontendDist": "../../fabric-browser-mac/dist"
   },
