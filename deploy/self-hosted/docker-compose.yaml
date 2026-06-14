@@ -1,0 +1,37 @@
+services:
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    command:
+      - start
+      - --user
+      - ${SURREAL_USER:-root}
+      - --pass
+      - ${SURREAL_PASS:-ChangeMeNow}
+      - rocksdb:/data
+    ports:
+      - "${SURREAL_PORT:-8000}:8000"
+    volumes:
+      - surrealdb-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  control-pane:
+    image: node:22-alpine
+    working_dir: /workspace/fabric-browser-mac
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "${CONTROL_PANE_PORT:-5173}:5173"
+    volumes:
+      - ../../:/workspace
+    environment:
+      VITE_FABRIC_MODE: self-hosted
+      VITE_SURREAL_ENDPOINT: http://localhost:${SURREAL_PORT:-8000}
+    depends_on:
+      surrealdb:
+        condition: service_healthy
+
+volumes:
+  surrealdb-data:
