@@ -48,15 +48,19 @@ jobs:
           chmod +x fabricore-os/bin/fabricore fabricore-os/build-fabric-dmg.sh
           ./fabricore-os/bin/fabricore build dmg
 
-      - name: Upload fabric.dmg artifact
+      - name: Upload fabric.dmg artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: fabric.dmg
-          path: fabric.dmg
+          name: fabric-dmg
+          path: |
+            fabric.dmg
+            fabric.dmg.sha256
           if-no-files-found: error
 
       - name: Attach fabric.dmg to GitHub Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: fabric.dmg
+          files: |
+            fabric.dmg
+            fabric.dmg.sha256
