@@ -1,0 +1,128 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: agents.fabric.agennext.io
+spec:
+  group: fabric.agennext.io
+  scope: Namespaced
+  names:
+    plural: agents
+    singular: agent
+    kind: Agent
+    shortNames:
+      - agt
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          required:
+            - spec
+          properties:
+            spec:
+              type: object
+              required:
+                - displayName
+                - objective
+              properties:
+                displayName:
+                  type: string
+                description:
+                  type: string
+                objective:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - draft
+                    - active
+                    - probation
+                    - suspended
+                    - archived
+                  default: draft
+                lifecycle:
+                  type: object
+                  properties:
+                    state:
+                      type: string
+                      enum:
+                        - Draft
+                        - Designed
+                        - Validated
+                        - Approved
+                        - Active
+                        - Probation
+                        - Suspended
+                        - Archived
+                owner:
+                  type: object
+                  properties:
+                    kind:
+                      type: string
+                    id:
+                      type: string
+                trust:
+                  type: object
+                  properties:
+                    score:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                runtime:
+                  type: object
+                  properties:
+                    mode:
+                      type: string
+                      enum:
+                        - manual
+                        - assisted
+                        - autonomous
+                    approvals:
+                      type: string
+                      enum:
+                        - none
+                        - required
+                skills:
+                  type: array
+                  items:
+                    type: string
+                tools:
+                  type: array
+                  items:
+                    type: string
+                policies:
+                  type: array
+                  items:
+                    type: string
+                constraints:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                observedGeneration:
+                  type: integer
+                surrealRecord:
+                  type: string
+                lastReconciledAt:
+                  type: string
+                  format: date-time
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Status
+          type: string
+          jsonPath: .spec.status
+        - name: Trust
+          type: integer
+          jsonPath: .spec.trust.score
+        - name: Runtime
+          type: string
+          jsonPath: .spec.runtime.mode
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
