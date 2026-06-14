@@ -53,6 +53,10 @@ pub fn execute_action(action_id: String) -> Result<FabricCoreActionOutput, Strin
         .find(|candidate| candidate.id == action_id)
         .ok_or_else(|| format!("Fabric Core action not allowlisted: {action_id}"))?;
 
+    if !matches!(action.mode.as_str(), "read-only" | "verification") {
+        return Err(format!("action {} mode is not executable in headless minimal surface", action.id));
+    }
+
     let script_path = root.join(&action.script);
     if !script_path.starts_with(&root) {
         return Err(format!("action {} resolves outside repo root", action.id));
@@ -65,6 +69,8 @@ pub fn execute_action(action_id: String) -> Result<FabricCoreActionOutput, Strin
     let output = Command::new("/bin/bash")
         .arg(script_path)
         .current_dir(root)
+        .env_clear()
+        .env("PATH", "/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin")
         .output()
         .map_err(|error| format!("failed to execute action {}: {error}", action.id))?;
 
@@ -81,6 +87,10 @@ pub fn validate_actions(actions: &FabricCoreActions) -> Result<(), String> {
         return Err("Fabric Core actions must target apple-silicon-arm64-only".into());
     }
 
+    if actions.actions.len() > 3 {
+        return Err("headless minimal Fabric Core surface allows at most 3 actions".into());
+    }
+
     for action in &actions.actions {
         if action.id.trim().is_empty() {
             return Err("Fabric Core action id must not be empty".into());
@@ -88,6 +98,10 @@ pub fn validate_actions(actions: &FabricCoreActions) -> Result<(), String> {
 
         if action.id.contains('/') || action.id.contains("..") {
             return Err(format!("action {} has unsafe id", action.id));
+        }
+
+        if !matches!(action.mode.as_str(), "read-only" | "verification") {
+            return Err(format!("action {} has disallowed mode {}", action.id, action.mode));
         }
 
         if action.script.starts_with('/') || action.script.contains("..") {
