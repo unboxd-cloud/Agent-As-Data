@@ -127,8 +127,12 @@ public final class AgentReconcilerApp {
         Map<String, Object> trust = safeMap(spec.get("trust"));
         Map<String, Object> lifecycle = safeMap(spec.get("lifecycle"));
         Map<String, Object> runtime = safeMap(spec.get("runtime"));
+        Map<String, Object> tenancy = safeMap(spec.get("tenancy"));
 
         Map<String, Object> data = new LinkedHashMap<>();
+        data.put("tenant_id", stringValue(tenancy.get("tenantId"), "default"));
+        data.put("workspace_id", stringValue(tenancy.get("workspaceId"), "default"));
+        data.put("environment", stringValue(tenancy.get("environment"), "local"));
         data.put("name", stringValue(spec.get("displayName"), agent.getMetadata().getName()));
         data.put("description", stringValue(spec.get("description"), ""));
         data.put("objective", stringValue(spec.get("objective"), ""));
