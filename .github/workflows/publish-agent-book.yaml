@@ -1,0 +1,78 @@
+name: Publish Agent Book
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "agent-book/**"
+      - "book-site/**"
+      - ".github/workflows/publish-agent-book.yaml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: agent-book-pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    name: Publish Agent Book to GitHub Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare site
+        run: |
+          set -euo pipefail
+          mkdir -p public/book
+          cp -R book-site/* public/
+          cp -R agent-book/* public/book/
+          cat > public/book/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>Agent Book Manuscript</title>
+            <style>body{font-family:system-ui,sans-serif;max-width:900px;margin:48px auto;padding:0 24px;line-height:1.65}pre{background:#0f172a;color:#e2e8f0;padding:16px;border-radius:12px;overflow:auto}a{color:#2457c5;font-weight:700}</style>
+          </head>
+          <body>
+            <h1>Agent Book Manuscript</h1>
+            <p>Markdown chapters are published as source-of-truth book files.</p>
+            <ul>
+              <li><a href="README.md">Full manuscript</a></li>
+              <li><a href="01-agent-as-data.md">Agent as Data</a></li>
+              <li><a href="02-mathematics-as-meta.md">Mathematics as Meta</a></li>
+              <li><a href="03-metal-at-core.md">Metal at Core</a></li>
+              <li><a href="04-meta-kube.md">Meta Kube</a></li>
+              <li><a href="05-storm.md">Storm</a></li>
+              <li><a href="06-superstorm.md">Superstorm</a></li>
+              <li><a href="07-repair-agent.md">Repair Agent</a></li>
+              <li><a href="08-release-gates.md">Release Gates</a></li>
+              <li><a href="09-operational-excellence.md">Agentic Operational Excellence</a></li>
+            </ul>
+          </body>
+          </html>
+          HTML
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
