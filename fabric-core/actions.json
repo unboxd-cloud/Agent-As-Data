@@ -1,0 +1,62 @@
+{
+  "version": "0.1.0",
+  "nativeRule": "apple-silicon-arm64-only",
+  "actions": [
+    {
+      "id": "check-machine",
+      "label": "Check Machine",
+      "description": "Run Apple Silicon Metal Core readiness checks.",
+      "mode": "read-only",
+      "script": "fabric-metal-core/scripts/check-mac-metal.sh"
+    },
+    {
+      "id": "start-control-pane",
+      "label": "Start Control Pane",
+      "description": "Start the local Fabric Control Pane.",
+      "mode": "local-start",
+      "script": "fabric-mac-core/scripts/start-control-pane.sh"
+    },
+    {
+      "id": "start-local-stack",
+      "label": "Start Local Stack",
+      "description": "Start the self-servable local stack through Pod Manager.",
+      "mode": "local-start",
+      "script": "pod-manager/scripts/up-compose.sh"
+    },
+    {
+      "id": "stop-local-stack",
+      "label": "Stop Local Stack",
+      "description": "Stop the self-servable local stack through Pod Manager.",
+      "mode": "local-stop",
+      "script": "pod-manager/scripts/down-compose.sh"
+    },
+    {
+      "id": "show-status",
+      "label": "Show Status",
+      "description": "Show local service, pod, and port status.",
+      "mode": "read-only",
+      "script": "pod-manager/scripts/status.sh"
+    },
+    {
+      "id": "show-logs",
+      "label": "Show Logs",
+      "description": "Show recent local service and reconciler logs.",
+      "mode": "read-only",
+      "script": "pod-manager/scripts/logs.sh"
+    },
+    {
+      "id": "prove-reconciliation",
+      "label": "Prove Reconciliation",
+      "description": "Run the tenant-aware Kubernetes reconciliation proof.",
+      "mode": "verification",
+      "script": "pod-manager/scripts/prove.sh"
+    },
+    {
+      "id": "recover-local-stack",
+      "label": "Recover Local Stack",
+      "description": "Restart local services and show status.",
+      "mode": "recovery",
+      "script": "pod-manager/scripts/recover.sh"
+    }
+  ]
+}
