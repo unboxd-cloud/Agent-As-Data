@@ -18,6 +18,7 @@ controlPrimitives:
   - Repair Agent
   - Storm
   - Superstorm
+  - Agent Destination
 requiredBookChapters:
   - agent-book/README.md
   - agent-book/01-agent-as-data.md
@@ -35,6 +36,7 @@ requiredDocuments:
   - docs/meta-mathematical-model.md
   - docs/cortex.md
   - docs/agent-eye.md
+  - docs/agent-destination.md
   - platform/README.md
   - fabricore-os/CONTRACT.md
   - fabricore-os/FLOW.md
@@ -72,4 +74,6 @@ nonNegotiables:
   - No bound book without a publish path
   - No Cortex without Agent Eye evidence
   - No Repair Agent action without Cortex routing
+  - No Agent Destination without gate allowance
+  - No release destination without human authority
   - No scale before surface minimization
