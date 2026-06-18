@@ -1,0 +1,124 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fabric
+  labels:
+    fabric.agennext.io/platform: agent-as-data
+    fabric.agennext.io/book-bound: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bound-book-platform-flow
+  namespace: fabric
+  labels:
+    fabric.agennext.io/component: reconciliation-flow
+data:
+  flow: |
+    Agent Eye observes
+      ↓
+    Cortex reasons
+      ↓
+    Repair Agent repairs
+      ↓
+    Storm records
+      ↓
+    Superstorm aggregates
+      ↓
+    Gate enforces
+      ↓
+    Chinmay Panda releases
+  doctrine: |
+    No agent without data.
+    No scale without mathematics.
+    No runtime without metal.
+    No platform without a bound book.
+    No Cortex without Agent Eye evidence.
+    No Repair Agent action without Cortex routing.
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-eye
+  namespace: fabric
+  labels:
+    app.kubernetes.io/name: agent-eye
+    fabric.agennext.io/role: observe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agent-eye
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agent-eye
+        fabric.agennext.io/role: observe
+    spec:
+      containers:
+        - name: agent-eye
+          image: ghcr.io/unboxd-cloud/agent-as-data-reconciler:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FABRIC_ROLE
+              value: agent-eye
+            - name: FABRIC_MODE
+              value: observe-only
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cortex
+  namespace: fabric
+  labels:
+    app.kubernetes.io/name: cortex
+    fabric.agennext.io/role: reason
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cortex
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: cortex
+        fabric.agennext.io/role: reason
+    spec:
+      containers:
+        - name: cortex
+          image: ghcr.io/unboxd-cloud/agent-as-data-reconciler:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FABRIC_ROLE
+              value: cortex
+            - name: FABRIC_MODE
+              value: route-only
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: repair-agent
+  namespace: fabric
+  labels:
+    app.kubernetes.io/name: repair-agent
+    fabric.agennext.io/role: repair
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: repair-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: repair-agent
+        fabric.agennext.io/role: repair
+    spec:
+      containers:
+        - name: repair-agent
+          image: ghcr.io/unboxd-cloud/agent-as-data-reconciler:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: FABRIC_ROLE
+              value: repair-agent
+            - name: FABRIC_MODE
+              value: human-gated-repair
